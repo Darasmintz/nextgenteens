@@ -294,11 +294,17 @@ function showTourStep() {
         return;
     }
 
-    // Remove previous highlight
-    document.querySelectorAll('.tour-highlight').forEach(el => el.classList.remove('tour-highlight'));
+    // Remove previous highlight and event listeners
+    document.querySelectorAll('.tour-highlight').forEach(el => {
+        el.classList.remove('tour-highlight');
+        el.removeEventListener('click', preventTourClick);
+    });
 
     // Add highlight to current element
     element.classList.add('tour-highlight');
+    
+    // Prevent clicks on highlighted elements during tour
+    element.addEventListener('click', preventTourClick, true);
 
     // Position tooltip
     const rect = element.getBoundingClientRect();
@@ -356,10 +362,18 @@ function skipTour() {
 function endTour() {
     tourOverlay.classList.remove('active');
     tourTooltip.classList.remove('active');
-    document.querySelectorAll('.tour-highlight').forEach(el => el.classList.remove('tour-highlight'));
+    document.querySelectorAll('.tour-highlight').forEach(el => {
+        el.classList.remove('tour-highlight');
+        el.removeEventListener('click', preventTourClick);
+    });
     tourTrigger.classList.remove('hidden');
     localStorage.setItem('tourCompleted', 'true');
     showSystemCard('Tour completed! You can always restart it using the help button.', 'success');
+}
+
+function preventTourClick(event) {
+    event.stopPropagation();
+    event.preventDefault();
 }
 
 // Initialize tour system when DOM is ready
@@ -455,6 +469,11 @@ async function handleLogin(event) {
     submitBtn.textContent = 'Logging in...';
     submitBtn.disabled = true;
 
+    // Add timeout to prevent indefinite loading
+    const timeoutPromise = new Promise((_, reject) => {
+        setTimeout(() => reject(new Error('Request timeout. Please try again.')), 15000);
+    });
+
     try {
         const client = await getSupabase();
         if (!client) { 
@@ -463,7 +482,13 @@ async function handleLogin(event) {
             submitBtn.disabled = false;
             return; 
         }
-        const { data, error } = await client.auth.signInWithPassword({ email, password });
+        
+        // Race between auth request and timeout
+        const { data, error } = await Promise.race([
+            client.auth.signInWithPassword({ email, password }),
+            timeoutPromise
+        ]);
+        
         if (error) { 
             showAuthError(error.message || 'Invalid credentials'); 
             submitBtn.textContent = originalText;
@@ -508,7 +533,7 @@ async function handleLogin(event) {
             window.location.href = dest;
         }, 1000);
     } catch (error) {
-        showAuthError('An error occurred during login.');
+        showAuthError(error.message || 'An error occurred during login.');
         submitBtn.textContent = originalText;
         submitBtn.disabled = false;
     }
@@ -534,6 +559,11 @@ async function handleRegister(event) {
     submitBtn.textContent = 'Creating account...';
     submitBtn.disabled = true;
 
+    // Add timeout to prevent indefinite loading
+    const timeoutPromise = new Promise((_, reject) => {
+        setTimeout(() => reject(new Error('Request timeout. Please try again.')), 15000);
+    });
+
     try {
         const client = await getSupabase();
         if (!client) { 
@@ -542,10 +572,16 @@ async function handleRegister(event) {
             submitBtn.disabled = false;
             return; 
         }
-        const { data, error } = await client.auth.signUp({
-            email, password,
-            options: { data: { full_name: fullName, role, age } }
-        });
+        
+        // Race between auth request and timeout
+        const { data, error } = await Promise.race([
+            client.auth.signUp({
+                email, password,
+                options: { data: { full_name: fullName, role, age } }
+            }),
+            timeoutPromise
+        ]);
+        
         if (error) {
             let message = error.message || 'Unknown error';
             if (message.includes('User already registered')) message = 'This email is already registered. Please login instead.';
