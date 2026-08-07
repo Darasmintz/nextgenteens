@@ -959,8 +959,29 @@ async function handleLogout() {
 
 function toggleSidebar() {
     const sidebar = document.getElementById('sidebar');
-    if (sidebar) sidebar.classList.toggle('open');
+    if (sidebar) {
+        sidebar.classList.toggle('open');
+        // Prevent body scroll when sidebar is open on mobile
+        if (sidebar.classList.contains('open')) {
+            document.body.style.overflow = 'hidden';
+        } else {
+            document.body.style.overflow = '';
+        }
+    }
 }
+
+// Close sidebar when clicking outside on mobile
+document.addEventListener('click', function(event) {
+    const sidebar = document.getElementById('sidebar');
+    const menuToggle = document.querySelector('.menu-toggle');
+    
+    if (sidebar && sidebar.classList.contains('open')) {
+        if (!sidebar.contains(event.target) && !menuToggle.contains(event.target)) {
+            sidebar.classList.remove('open');
+            document.body.style.overflow = '';
+        }
+    }
+});
 
 function toggleMobileMenu() {
     const navLinks = document.getElementById('navLinks');
