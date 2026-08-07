@@ -1,0 +1,144 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Programs - NextGenTeens</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com" />
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800;900&display=swap" rel="stylesheet" />
+    <link rel="stylesheet" href="style.css" />
+    <link rel="icon" href="logo.png" />
+    <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2/dist/umd/supabase.min.js"></script>
+</head>
+<body class="dashboard-page">
+    <!-- Page Loader -->
+    <div class="page-loader" id="pageLoader">
+        <div class="loader-spinner"></div>
+        <div class="loader-text">Loading...</div>
+    </div>
+    <aside class="sidebar" id="sidebar">
+        <div class="sidebar-header">
+            <img src="logo.png" alt="NextGenTeens" class="sidebar-logo" />
+            <span class="sidebar-brand">NextGenTeens</span>
+            <button class="sidebar-close" onclick="toggleSidebar()">&#10005;</button>
+        </div>
+                        <nav class="sidebar-nav">
+            <a href="student-dashboard.html" class="nav-item "><span class="nav-icon">&#128202;</span> Dashboard</a>
+            <a href="programs.html" class="nav-item active"><span class="nav-icon">&#128218;</span> Programs</a>
+            <a href="ctfs.html" class="nav-item "><span class="nav-icon">&#9962;</span> CTFS</a>
+            <a href="choir.html" class="nav-item "><span class="nav-icon">&#127925;</span> Choir</a>
+            <a href="lesson.html" class="nav-item "><span class="nav-icon">&#128214;</span> Lessons</a>
+            <a href="tasks.html" class="nav-item "><span class="nav-icon">&#128221;</span> Tasks</a>
+            <a href="activity-feed.html" class="nav-item "><span class="nav-icon">&#128226;</span> Activity Feed</a>
+            <a href="leaderboard.html" class="nav-item "><span class="nav-icon">&#128200;</span> Leaderboard</a>
+            <a href="games.html" class="nav-item "><span class="nav-icon">&#127918;</span> Learning Lab</a>
+            <a href="ai-coach.html" class="nav-item "><span class="nav-icon">&#129302;</span> AI Coach</a>
+            <a href="notifications.html" class="nav-item "><span class="nav-icon">&#128276;</span> Notifications</a>
+            <a href="profile.html" class="nav-item "><span class="nav-icon">&#128100;</span> Profile</a>
+            <a href="achievements.html" class="nav-item "><span class="nav-icon">&#127942;</span> Achievements</a>
+            <a href="settings.html" class="nav-item "><span class="nav-icon">&#9881;</span> Settings</a>
+            <a href="index.html" class="nav-item logout" onclick="handleLogout()"><span class="nav-icon">&#128682;</span> Logout</a>
+        </nav>
+    </aside>
+
+    <main class="dashboard-main">
+        <header class="topbar">
+            <button class="menu-toggle" onclick="toggleSidebar()">&#9776;</button>
+            <h1 class="topbar-title">&#128218; Programs</h1>
+            <div class="topbar-user">
+                <span id="userNameDisplay">Student</span>
+                <a href="profile.html" class="user-avatar-link">
+                    <img class="user-avatar-img" id="userAvatarImg" src="" style="display:none;" alt="Profile" />
+                    <span class="user-avatar" id="userAvatar">&#129489;&#8205;&#127891;</span>
+                </a>
+            </div>
+        </header>
+
+        <div class="dashboard-content">
+            <section class="welcome-section">
+                <div class="welcome-text">
+                    <h2>Explore Programs</h2>
+                    <p>Discover development opportunities designed for your growth.</p>
+                </div>
+            </section>
+
+            <section class="dashboard-section">
+                <div class="programs-grid" id="allPrograms">
+                    <!-- CTFS -->
+                    <div class="program-card featured" onclick="window.location.href='ctfs.html'" style="cursor: pointer;">
+                        <div class="program-card-header">
+                            <span class="program-icon">&#9962;</span>
+                            <span class="program-badge featured-badge">&#128293; Popular</span>
+                        </div>
+                        <h3 class="program-title">CTFS</h3>
+                        <p class="program-subtitle">Christian Teenage Fellowship Session</p>
+                        <div class="program-meta">
+                            <span>&#128197; 12 Weeks</span>
+                            <span>&#128198; Sat & Sun</span>
+                            <span>&#127919; 12+ Years</span>
+                        </div>
+                        <p class="program-theme">"Become Who God Called You To Be"</p>
+                        <div class="program-features">
+                            <span>&#128214; Foundation</span><span>&#10084;&#65039; Love</span><span>&#129504; Mindset</span>
+                            <span>&#128081; Leadership</span><span>&#128591; Faith</span><span>&#128170; Character</span>
+                        </div>
+                        <a href="ctfs.html" class="btn btn-primary program-cta">View Program</a>
+                    </div>
+
+                    <!-- TCVLMDP -->
+                    <div class="program-card" onclick="window.location.href='choir.html'" style="cursor: pointer;">
+                        <div class="program-card-header">
+                            <span class="program-icon">&#127925;</span>
+                            <span class="program-badge">Active</span>
+                        </div>
+                        <h3 class="program-title">TCVLMDP</h3>
+                        <p class="program-subtitle">Teen Choir Voice, Leadership & Mentorship</p>
+                        <div class="program-features">
+                            <span>&#127908; Voice Training</span><span>&#128084; Leadership</span><span>&#129309; Mentorship</span>
+                            <span>&#128591; Spiritual Growth</span><span>&#128176; Financial Literacy</span><span>&#129504; Life Skills</span>
+                        </div>
+                        <a href="choir.html" class="btn btn-primary program-cta">View Program</a>
+                    </div>
+                </div>
+            </section>
+
+            <section class="dashboard-section">
+                <h3>&#128202; Your Program Progress</h3>
+                <div id="programProgress">
+                    <div class="program-item">
+                        <div class="program-info">
+                            <span class="program-icon">&#9962;</span>
+                            <div>
+                                <h4>CTFS Progress</h4>
+                                <p id="ctfsProgressText">0% complete</p>
+                            </div>
+                        </div>
+                        <div style="flex: 1; max-width: 200px; margin-left: 1rem;">
+                            <div style="height: 8px; background: var(--border); border-radius: 4px; overflow: hidden;">
+                                <div id="ctfsProgressBar" style="height: 100%; width: 0%; background: var(--primary); border-radius: 4px; transition: width 0.5s;"></div>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="program-item">
+                        <div class="program-info">
+                            <span class="program-icon">&#127925;</span>
+                            <div>
+                                <h4>TCVLMDP Progress</h4>
+                                <p id="choirProgressText">0% complete</p>
+                            </div>
+                        </div>
+                        <div style="flex: 1; max-width: 200px; margin-left: 1rem;">
+                            <div style="height: 8px; background: var(--border); border-radius: 4px; overflow: hidden;">
+                                <div id="choirProgressBar" style="height: 100%; width: 0%; background: var(--success); border-radius: 4px; transition: width 0.5s;"></div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </section>
+        </div>
+    </main>
+
+    <script src="script.js"></script>
+</body>
+</html>

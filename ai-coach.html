@@ -1,0 +1,151 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>AI Coach - NextGenTeens</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com" />
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800;900&display=swap" rel="stylesheet" />
+    <link rel="stylesheet" href="style.css" />
+    <link rel="icon" href="logo.png" />
+    <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2/dist/umd/supabase.min.js"></script>
+</head>
+<body class="dashboard-page">
+    <!-- Page Loader -->
+    <div class="page-loader" id="pageLoader">
+        <div class="loader-spinner"></div>
+        <div class="loader-text">Loading...</div>
+    </div>
+    <aside class="sidebar" id="sidebar">
+        <div class="sidebar-header">
+            <img src="logo.png" alt="NextGenTeens" class="sidebar-logo" />
+            <span class="sidebar-brand">NextGenTeens</span>
+            <button class="sidebar-close" onclick="toggleSidebar()">&#10005;</button>
+        </div>
+                        <nav class="sidebar-nav">
+            <a href="student-dashboard.html" class="nav-item "><span class="nav-icon">&#128202;</span> Dashboard</a>
+            <a href="programs.html" class="nav-item "><span class="nav-icon">&#128218;</span> Programs</a>
+            <a href="ctfs.html" class="nav-item "><span class="nav-icon">&#9962;</span> CTFS</a>
+            <a href="choir.html" class="nav-item "><span class="nav-icon">&#127925;</span> Choir</a>
+            <a href="lesson.html" class="nav-item "><span class="nav-icon">&#128214;</span> Lessons</a>
+            <a href="tasks.html" class="nav-item "><span class="nav-icon">&#128221;</span> Tasks</a>
+            <a href="activity-feed.html" class="nav-item "><span class="nav-icon">&#128226;</span> Activity Feed</a>
+            <a href="leaderboard.html" class="nav-item "><span class="nav-icon">&#128200;</span> Leaderboard</a>
+            <a href="games.html" class="nav-item "><span class="nav-icon">&#127918;</span> Learning Lab</a>
+            <a href="ai-coach.html" class="nav-item active"><span class="nav-icon">&#129302;</span> AI Coach</a>
+            <a href="notifications.html" class="nav-item "><span class="nav-icon">&#128276;</span> Notifications</a>
+            <a href="profile.html" class="nav-item "><span class="nav-icon">&#128100;</span> Profile</a>
+            <a href="achievements.html" class="nav-item "><span class="nav-icon">&#127942;</span> Achievements</a>
+            <a href="settings.html" class="nav-item "><span class="nav-icon">&#9881;</span> Settings</a>
+            <a href="index.html" class="nav-item logout" onclick="handleLogout()"><span class="nav-icon">&#128682;</span> Logout</a>
+        </nav>
+    </aside>
+
+    <main class="dashboard-main">
+        <header class="topbar">
+            <button class="menu-toggle" onclick="toggleSidebar()">&#9776;</button>
+            <h1 class="topbar-title">&#129302; AI Coach</h1>
+            <div class="topbar-user">
+                <span id="userNameDisplay">Student</span>
+                <a href="profile.html" class="user-avatar-link">
+                    <img class="user-avatar-img" id="userAvatarImg" src="" style="display:none;" alt="Profile" />
+                    <span class="user-avatar" id="userAvatar">&#129489;&#8205;&#127891;</span>
+                </a>
+            </div>
+        </header>
+
+        <div class="dashboard-content">
+            <section class="welcome-section">
+                <div class="welcome-text">
+                    <h2>Your AI Growth Coach</h2>
+                    <p>Get personalized coaching, goal discovery, leadership assessment, and growth insights.</p>
+                </div>
+            </section>
+
+            <section class="dashboard-section">
+                <h3>&#128172; Chat with AI Coach</h3>
+                <div id="aiChatContainer" style="height: 400px; overflow-y: auto; background: var(--background); border-radius: var(--radius-md); padding: 1rem; margin-bottom: 1rem;">
+                    <div style="text-align: center; padding: 2rem; color: var(--text-muted);">
+                        <div style="font-size: 4rem; margin-bottom: 1rem;">&#129302;</div>
+                        <p style="font-size: 1.1rem; font-weight: 600;">AI Coach is ready to help!</p>
+                        <p style="font-size: 0.875rem;">Ask about goals, leadership, faith, or personal growth.</p>
+                    </div>
+                </div>
+                <div style="display: flex; gap: 0.5rem;">
+                    <input type="text" id="aiQuestion" placeholder="Ask a question..." style="flex: 1; padding: 0.75rem 1rem; border: 2px solid var(--border); border-radius: var(--radius-md); font-family: var(--font);">
+                    <button class="btn btn-primary" onclick="askAICoach()">Send</button>
+                </div>
+                <div style="margin-top: 0.5rem; display: flex; gap: 0.5rem; flex-wrap: wrap;">
+                    <button class="btn btn-sm btn-outline" onclick="askAICoachPrompt('help me discover my goals')">&#127919; Goal Discovery</button>
+                    <button class="btn btn-sm btn-outline" onclick="askAICoachPrompt('assess my leadership potential')">&#128084; Leadership</button>
+                    <button class="btn btn-sm btn-outline" onclick="askAICoachPrompt('how can I grow my faith')">&#128591; Spiritual Growth</button>
+                    <button class="btn btn-sm btn-outline" onclick="askAICoachPrompt('improve my communication skills')">&#128172; Communication</button>
+                    <button class="btn btn-sm btn-outline" onclick="askAICoachPrompt('help me build better habits')">&#128203; Habits</button>
+                </div>
+            </section>
+
+            <section class="dashboard-section">
+                <h3>&#128202; Your Growth Profile</h3>
+                <div id="growthProfile" style="display: grid; grid-template-columns: repeat(auto-fill, minmax(200px, 1fr)); gap: 1rem;">
+                    <div style="padding: 1rem; background: var(--background); border-radius: var(--radius-md); text-align: center;">
+                        <div style="font-size: 2rem;">&#128172;</div>
+                        <h4>Communication</h4>
+                        <div style="height: 6px; background: var(--border); border-radius: 3px; overflow: hidden; margin: 0.5rem 0;">
+                            <div id="aiCommunication" style="height: 100%; width: 0%; background: var(--primary); border-radius: 3px;"></div>
+                        </div>
+                        <p id="aiCommunicationText" style="font-size: 0.75rem; color: var(--text-muted);">Developing</p>
+                    </div>
+                    <div style="padding: 1rem; background: var(--background); border-radius: var(--radius-md); text-align: center;">
+                        <div style="font-size: 2rem;">&#128084;</div>
+                        <h4>Leadership</h4>
+                        <div style="height: 6px; background: var(--border); border-radius: 3px; overflow: hidden; margin: 0.5rem 0;">
+                            <div id="aiLeadership" style="height: 100%; width: 0%; background: var(--primary); border-radius: 3px;"></div>
+                        </div>
+                        <p id="aiLeadershipText" style="font-size: 0.75rem; color: var(--text-muted);">Developing</p>
+                    </div>
+                    <div style="padding: 1rem; background: var(--background); border-radius: var(--radius-md); text-align: center;">
+                        <div style="font-size: 2rem;">&#129504;</div>
+                        <h4>Growth Mindset</h4>
+                        <div style="height: 6px; background: var(--border); border-radius: 3px; overflow: hidden; margin: 0.5rem 0;">
+                            <div id="aiGrowthMindset" style="height: 100%; width: 0%; background: var(--primary); border-radius: 3px;"></div>
+                        </div>
+                        <p id="aiGrowthMindsetText" style="font-size: 0.75rem; color: var(--text-muted);">Developing</p>
+                    </div>
+                    <div style="padding: 1rem; background: var(--background); border-radius: var(--radius-md); text-align: center;">
+                        <div style="font-size: 2rem;">&#129309;</div>
+                        <h4>Teamwork</h4>
+                        <div style="height: 6px; background: var(--border); border-radius: 3px; overflow: hidden; margin: 0.5rem 0;">
+                            <div id="aiTeamwork" style="height: 100%; width: 0%; background: var(--primary); border-radius: 3px;"></div>
+                        </div>
+                        <p id="aiTeamworkText" style="font-size: 0.75rem; color: var(--text-muted);">Developing</p>
+                    </div>
+                    <div style="padding: 1rem; background: var(--background); border-radius: var(--radius-md); text-align: center;">
+                        <div style="font-size: 2rem;">&#128293;</div>
+                        <h4>Initiative</h4>
+                        <div style="height: 6px; background: var(--border); border-radius: 3px; overflow: hidden; margin: 0.5rem 0;">
+                            <div id="aiInitiative" style="height: 100%; width: 0%; background: var(--primary); border-radius: 3px;"></div>
+                        </div>
+                        <p id="aiInitiativeText" style="font-size: 0.75rem; color: var(--text-muted);">Developing</p>
+                    </div>
+                    <div style="padding: 1rem; background: var(--background); border-radius: var(--radius-md); text-align: center;">
+                        <div style="font-size: 2rem;">&#10084;&#65039;</div>
+                        <h4>Emotional Maturity</h4>
+                        <div style="height: 6px; background: var(--border); border-radius: 3px; overflow: hidden; margin: 0.5rem 0;">
+                            <div id="aiEmotional" style="height: 100%; width: 0%; background: var(--primary); border-radius: 3px;"></div>
+                        </div>
+                        <p id="aiEmotionalText" style="font-size: 0.75rem; color: var(--text-muted);">Developing</p>
+                    </div>
+                </div>
+            </section>
+        </div>
+    </main>
+
+    <script src="script.js"></script>
+    <script>
+        document.addEventListener('DOMContentLoaded', function() {
+            initPage(typeof loadAICoachPage !== 'undefined' ? loadAICoachPage : null);
+        });
+    </script>
+</body>
+</html>

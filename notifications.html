@@ -1,0 +1,287 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Notifications - NextGenTeens</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com" />
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800;900&display=swap" rel="stylesheet" />
+    <link rel="stylesheet" href="style.css" />
+    <link rel="icon" href="logo.png" />
+    <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2/dist/umd/supabase.min.js"></script>
+    <style>
+        .notif-item { display:flex; gap:1rem; padding:1rem; background:var(--card); border-radius:var(--radius-md); border:1px solid var(--border-light); transition:all var(--transition); cursor:pointer; }
+        .notif-item:hover { border-color:var(--primary-light); background:rgba(37,99,235,0.02); }
+        .notif-item.unread { border-left:3px solid var(--primary); background:rgba(37,99,235,0.03); }
+        .notif-icon { font-size:1.75rem; flex-shrink:0; width:44px; height:44px; display:flex; align-items:center; justify-content:center; background:var(--background); border-radius:50%; }
+        .notif-body { flex:1; min-width:0; }
+        .notif-title { font-weight:600; font-size:0.9rem; margin-bottom:0.2rem; }
+        .notif-desc { font-size:0.8rem; color:var(--text-light); margin:0; }
+        .notif-time { font-size:0.7rem; color:var(--text-muted); margin-top:0.25rem; }
+        .notif-dot { width:8px; height:8px; border-radius:50%; background:var(--primary); flex-shrink:0; margin-top:6px; }
+        .filter-tabs { display:flex; gap:0.5rem; flex-wrap:wrap; margin-bottom:1.25rem; }
+        .filter-tab { padding:0.375rem 1rem; border-radius:var(--radius-full); font-size:0.8rem; font-weight:600; border:2px solid var(--border); background:transparent; color:var(--text-muted); cursor:pointer; transition:all var(--transition); }
+        .filter-tab.active { border-color:var(--primary); background:var(--primary); color:white; }
+        .filter-tab:hover:not(.active) { border-color:var(--primary-light); color:var(--primary); }
+        .notif-badge { display:inline-flex; align-items:center; justify-content:center; min-width:20px; height:20px; border-radius:10px; background:var(--danger); color:white; font-size:0.65rem; font-weight:700; padding:0 5px; }
+    </style>
+</head>
+<body class="dashboard-page">
+    <!-- Page Loader -->
+    <div class="page-loader" id="pageLoader">
+        <div class="loader-spinner"></div>
+        <div class="loader-text">Loading...</div>
+    </div>
+    <aside class="sidebar" id="sidebar">
+        <div class="sidebar-header">
+            <img src="logo.png" alt="NextGenTeens" class="sidebar-logo" />
+            <span class="sidebar-brand">NextGenTeens</span>
+            <button class="sidebar-close" onclick="toggleSidebar()">&#10005;</button>
+        </div>
+                        <nav class="sidebar-nav">
+            <a href="student-dashboard.html" class="nav-item "><span class="nav-icon">&#128202;</span> Dashboard</a>
+            <a href="programs.html" class="nav-item "><span class="nav-icon">&#128218;</span> Programs</a>
+            <a href="ctfs.html" class="nav-item "><span class="nav-icon">&#9962;</span> CTFS</a>
+            <a href="choir.html" class="nav-item "><span class="nav-icon">&#127925;</span> Choir</a>
+            <a href="lesson.html" class="nav-item "><span class="nav-icon">&#128214;</span> Lessons</a>
+            <a href="tasks.html" class="nav-item "><span class="nav-icon">&#128221;</span> Tasks</a>
+            <a href="activity-feed.html" class="nav-item "><span class="nav-icon">&#128226;</span> Activity Feed</a>
+            <a href="leaderboard.html" class="nav-item "><span class="nav-icon">&#128200;</span> Leaderboard</a>
+            <a href="games.html" class="nav-item "><span class="nav-icon">&#127918;</span> Learning Lab</a>
+            <a href="ai-coach.html" class="nav-item "><span class="nav-icon">&#129302;</span> AI Coach</a>
+            <a href="notifications.html" class="nav-item active"><span class="nav-icon">&#128276;</span> Notifications</a>
+            <a href="profile.html" class="nav-item "><span class="nav-icon">&#128100;</span> Profile</a>
+            <a href="achievements.html" class="nav-item "><span class="nav-icon">&#127942;</span> Achievements</a>
+            <a href="settings.html" class="nav-item "><span class="nav-icon">&#9881;</span> Settings</a>
+            <a href="index.html" class="nav-item logout" onclick="handleLogout()"><span class="nav-icon">&#128682;</span> Logout</a>
+        </nav>
+    </aside>
+
+    <main class="dashboard-main">
+        <header class="topbar">
+            <button class="menu-toggle" onclick="toggleSidebar()">&#9776;</button>
+            <h1 class="topbar-title">&#128276; Notifications</h1>
+            <div class="topbar-user">
+                <span id="userNameDisplay">Student</span>
+                <a href="profile.html" class="user-avatar-link">
+                    <img class="user-avatar-img" id="userAvatarImg" src="" style="display:none;" alt="Profile" />
+                    <span class="user-avatar" id="userAvatar">&#129489;&#8205;&#127891;</span>
+                </a>
+            </div>
+        </header>
+
+        <div class="dashboard-content">
+            <section class="welcome-section">
+                <div class="welcome-text">
+                    <h2>Notifications</h2>
+                    <p>Stay up to date with assignments, achievements, announcements, and mentor messages.</p>
+                </div>
+                <div class="welcome-stats">
+                    <div class="stat-card">
+                        <span class="stat-value" id="unreadCount">0</span>
+                        <span class="stat-label">Unread</span>
+                    </div>
+                    <div class="stat-card">
+                        <span class="stat-value" id="totalCount">0</span>
+                        <span class="stat-label">Total</span>
+                    </div>
+                </div>
+            </section>
+
+            <div class="dashboard-section">
+                <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:1rem;flex-wrap:wrap;gap:0.5rem;">
+                    <div class="filter-tabs">
+                        <button class="filter-tab active" onclick="filterNotifs('all', this)">All</button>
+                        <button class="filter-tab" onclick="filterNotifs('assignment', this)">&#128221; Assignments</button>
+                        <button class="filter-tab" onclick="filterNotifs('achievement', this)">&#127942; Achievements</button>
+                        <button class="filter-tab" onclick="filterNotifs('announcement', this)">&#128226; Announcements</button>
+                        <button class="filter-tab" onclick="filterNotifs('attendance', this)">&#128197; Attendance</button>
+                    </div>
+                    <button class="btn btn-sm btn-outline" onclick="markAllRead()">Mark all read</button>
+                </div>
+                <div id="notifList" style="display:flex;flex-direction:column;gap:0.5rem;">
+                    <div style="text-align:center;padding:2rem;color:var(--text-muted);">Loading notifications...</div>
+                </div>
+            </div>
+        </div>
+    </main>
+
+    <script src="script.js"></script>
+    <script>
+    let allNotifications = [];
+    let currentFilter = 'all';
+
+    document.addEventListener('DOMContentLoaded', async () => {
+        await loadNotificationsPage();
+    });
+
+    async function loadNotificationsPage() {
+        const client = await getSupabase();
+        if (!client) return;
+        const { data: { session } } = await client.auth.getSession();
+        if (!session) { window.location.href = 'login.html'; return; }
+
+        if (currentProfile) {
+            const el = document.getElementById('userNameDisplay');
+            if (el) el.textContent = currentProfile.full_name || 'Student';
+            
+            // Load profile picture in topbar
+            if (typeof loadUserAvatar === 'function') {
+                await loadUserAvatar(session.user.id, currentProfile.role);
+            }
+        }
+
+        allNotifications = await buildNotifications(session.user.id, client);
+
+        document.getElementById('totalCount').textContent = allNotifications.length;
+        document.getElementById('unreadCount').textContent = allNotifications.filter(n => n.unread).length;
+
+        renderNotifications(allNotifications);
+    }
+
+    async function buildNotifications(userId, client) {
+        const notifs = [];
+
+        // 1. Pending assignments
+        try {
+            const { data: subs } = await client.from('task_submissions')
+                .select('id, status, reviewed_at, tasks(title, sessions(title))')
+                .eq('student_id', userId)
+                .order('reviewed_at', { ascending: false })
+                .limit(20);
+
+            (subs || []).forEach(s => {
+                if (s.status === 'approved') {
+                    notifs.push({ type:'assignment', icon:'&#9989;', title:'Assignment Approved', desc: `"${s.tasks?.title || 'Assignment'}" has been approved by your mentor.`, time: s.reviewed_at, unread: isRecent(s.reviewed_at, 48) });
+                } else if (s.status === 'rejected') {
+                    notifs.push({ type:'assignment', icon:'&#10060;', title:'Assignment Needs Revision', desc: `"${s.tasks?.title || 'Assignment'}" was returned for revision. Please resubmit.`, time: s.reviewed_at, unread: isRecent(s.reviewed_at, 48), link:'tasks.html' });
+                } else if (s.status === 'pending') {
+                    notifs.push({ type:'assignment', icon:'&#9203;', title:'Assignment Under Review', desc: `"${s.tasks?.title || 'Assignment'}" is being reviewed by your mentor.`, time: s.reviewed_at, unread: false });
+                }
+            });
+        } catch(e) {}
+
+        // 2. Achievements
+        try {
+            const { data: ach } = await client.from('user_achievements')
+                .select('earned_at, achievements(name, icon, description)')
+                .eq('student_id', userId)
+                .order('earned_at', { ascending: false })
+                .limit(10);
+
+            (ach || []).forEach(a => {
+                notifs.push({ type:'achievement', icon: a.achievements?.icon || '&#127942;', title:'Achievement Unlocked: ' + (a.achievements?.name || ''), desc: a.achievements?.description || 'You earned a new achievement!', time: a.earned_at, unread: isRecent(a.earned_at, 72), link:'achievements.html' });
+            });
+        } catch(e) {}
+
+        // 3. Announcements (activities)
+        try {
+            const { data: acts } = await client.from('activities')
+                .select('*')
+                .eq('is_announcement', true)
+                .order('created_at', { ascending: false })
+                .limit(10);
+
+            (acts || []).forEach(a => {
+                notifs.push({ type:'announcement', icon:'&#128226;', title: a.title, desc: a.description || 'New announcement from your mentor.', time: a.created_at, unread: isRecent(a.created_at, 24), link:'activity-feed.html' });
+            });
+        } catch(e) {}
+
+        // 4. Attendance / strikes
+        try {
+            const { data: strikes } = await client.from('strikes')
+                .select('reason, created_at')
+                .eq('student_id', userId)
+                .order('created_at', { ascending: false })
+                .limit(5);
+
+            (strikes || []).forEach(s => {
+                notifs.push({ type:'attendance', icon:'&#9889;', title:'Strike Recorded', desc: `A strike was added: ${s.reason || 'Missed session'}. Total strikes may affect your SGI score.`, time: s.created_at, unread: isRecent(s.created_at, 48) });
+            });
+        } catch(e) {}
+
+        // 5. Unsubmitted assignments (upcoming tasks)
+        try {
+            const { data: assignments } = await client.from('tasks')
+                .select('id, title, sessions(title)').limit(5);
+            const { data: mySubs } = await client.from('task_submissions')
+                .select('task_id').eq('student_id', userId);
+            const submittedIds = new Set((mySubs || []).map(s => s.task_id));
+
+            (assignments || []).filter(a => !submittedIds.has(a.id)).slice(0, 3).forEach(a => {
+                notifs.push({ type:'assignment', icon:'&#128221;', title:'Assignment Due', desc: `"${a.title}" in ${a.sessions?.title || 'a session'} is waiting for your submission.`, time: null, unread: true, link:'tasks.html' });
+            });
+        } catch(e) {}
+
+        // Sort by time desc (nulls last)
+        notifs.sort((a, b) => {
+            if (!a.time && !b.time) return 0;
+            if (!a.time) return 1;
+            if (!b.time) return -1;
+            return new Date(b.time) - new Date(a.time);
+        });
+
+        return notifs;
+    }
+
+    function isRecent(dateStr, hoursThreshold) {
+        if (!dateStr) return false;
+        const diff = (Date.now() - new Date(dateStr)) / 3600000;
+        return diff < hoursThreshold;
+    }
+
+    function renderNotifications(notifs) {
+        const el = document.getElementById('notifList');
+        const filtered = currentFilter === 'all' ? notifs : notifs.filter(n => n.type === currentFilter);
+
+        if (!filtered.length) {
+            el.innerHTML = `
+                <div style="text-align:center;padding:3rem;color:var(--text-muted);">
+                    <div style="font-size:3rem;margin-bottom:0.75rem;">&#128276;</div>
+                    <p style="font-weight:600;">No notifications here yet.</p>
+                    <p style="font-size:0.875rem;">Complete assignments, earn achievements, and stay active to get updates!</p>
+                </div>`;
+            return;
+        }
+
+        el.innerHTML = filtered.map((n, i) => `
+            <div class="notif-item ${n.unread ? 'unread' : ''}" onclick="${n.link ? `window.location.href='${n.link}'` : 'void(0)'}">
+                <div class="notif-icon">${n.icon}</div>
+                <div class="notif-body">
+                    <div class="notif-title">${n.title}</div>
+                    <p class="notif-desc">${n.desc}</p>
+                    <div class="notif-time">${n.time ? timeAgo(n.time) : 'Pending'}</div>
+                </div>
+                ${n.unread ? '<div class="notif-dot"></div>' : ''}
+            </div>`).join('');
+    }
+
+    function filterNotifs(type, btn) {
+        currentFilter = type;
+        document.querySelectorAll('.filter-tab').forEach(b => b.classList.remove('active'));
+        btn.classList.add('active');
+        renderNotifications(allNotifications);
+    }
+
+    async function markAllRead() {
+        allNotifications.forEach(n => n.unread = false);
+        document.getElementById('unreadCount').textContent = '0';
+        renderNotifications(allNotifications);
+        showSystemCard('All notifications marked as read.', 'success');
+        const badge = document.getElementById('notifBadge');
+        if (badge) badge.style.display = 'none';
+        localStorage.setItem('ngt_notifs_cleared', new Date().toISOString());
+        try {
+            const client = await getSupabase();
+            if (client) {
+                const { data: { session } } = await client.auth.getSession();
+                if (session) {
+                    await client.from('notifications').update({ is_read: true }).eq('user_id', session.user.id);
+                }
+            }
+        } catch (e) {}
+    }
+    </script>
+</body>
+</html>

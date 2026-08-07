@@ -1,0 +1,475 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Platform Tutorial - NextGenTeens</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com" />
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800;900&display=swap" rel="stylesheet" />
+    <link rel="stylesheet" href="style.css" />
+    <link rel="icon" href="logo.png" />
+    <style>
+        .tutorial-container {
+            max-width: 1200px;
+            margin: 0 auto;
+            padding: 2rem;
+        }
+        .tutorial-header {
+            text-align: center;
+            margin-bottom: 3rem;
+        }
+        .tutorial-header h1 {
+            font-size: 2.5rem;
+            margin-bottom: 0.5rem;
+            background: linear-gradient(135deg, var(--primary), var(--secondary));
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            background-clip: text;
+        }
+        .tutorial-nav {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 0.5rem;
+            justify-content: center;
+            margin-bottom: 2rem;
+        }
+        .tutorial-nav button {
+            padding: 0.5rem 1rem;
+            border: 1px solid var(--border);
+            background: var(--card);
+            border-radius: var(--radius-md);
+            cursor: pointer;
+            transition: all var(--transition);
+        }
+        .tutorial-nav button:hover, .tutorial-nav button.active {
+            background: var(--primary);
+            color: white;
+            border-color: var(--primary);
+        }
+        .tutorial-section {
+            background: var(--card);
+            border-radius: var(--radius-lg);
+            padding: 2rem;
+            margin-bottom: 2rem;
+            border: 1px solid var(--border);
+        }
+        .tutorial-section h2 {
+            font-size: 1.75rem;
+            margin-bottom: 1rem;
+            color: var(--primary);
+        }
+        .tutorial-section h3 {
+            font-size: 1.25rem;
+            margin: 1.5rem 0 0.75rem;
+            color: var(--text);
+        }
+        .tutorial-section p {
+            color: var(--text-light);
+            line-height: 1.6;
+            margin-bottom: 1rem;
+        }
+        .tutorial-section ul {
+            margin-left: 1.5rem;
+            margin-bottom: 1rem;
+        }
+        .tutorial-section li {
+            color: var(--text-light);
+            margin-bottom: 0.5rem;
+        }
+        .tutorial-section code {
+            background: var(--background);
+            padding: 0.2rem 0.4rem;
+            border-radius: var(--radius-sm);
+            font-family: monospace;
+            font-size: 0.9rem;
+        }
+        .feature-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
+            gap: 1.5rem;
+            margin: 1.5rem 0;
+        }
+        .feature-card {
+            background: var(--background);
+            padding: 1.5rem;
+            border-radius: var(--radius-md);
+            border: 1px solid var(--border);
+        }
+        .feature-card h4 {
+            color: var(--primary);
+            margin-bottom: 0.5rem;
+            font-size: 1.1rem;
+        }
+        .feature-card p {
+            font-size: 0.9rem;
+            margin-bottom: 0;
+        }
+        .step-list {
+            counter-reset: step;
+        }
+        .step-list li {
+            position: relative;
+            padding-left: 2.5rem;
+            margin-bottom: 1rem;
+        }
+        .step-list li::before {
+            counter-increment: step;
+            content: counter(step);
+            position: absolute;
+            left: 0;
+            top: 0;
+            width: 1.8rem;
+            height: 1.8rem;
+            background: var(--primary);
+            color: white;
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-weight: 600;
+            font-size: 0.9rem;
+        }
+        .highlight-box {
+            background: rgba(37, 99, 235, 0.1);
+            border-left: 4px solid var(--primary);
+            padding: 1rem;
+            margin: 1rem 0;
+            border-radius: var(--radius-sm);
+        }
+        .highlight-box strong {
+            color: var(--primary);
+        }
+        .back-link {
+            display: inline-flex;
+            align-items: center;
+            gap: 0.5rem;
+            color: var(--primary);
+            text-decoration: none;
+            margin-bottom: 1rem;
+            font-weight: 500;
+        }
+        .back-link:hover {
+            text-decoration: underline;
+        }
+    </style>
+</head>
+<body>
+    <!-- Page Loader -->
+    <div class="page-loader" id="pageLoader">
+        <div class="loader-spinner"></div>
+        <div class="loader-text">Loading...</div>
+    </div>
+
+    <div class="tutorial-container">
+        <a href="index.html" class="back-link">← Back to Home</a>
+        
+        <div class="tutorial-header">
+            <h1>🚀 NextGenTeens Platform Tutorial</h1>
+            <p>Your complete guide to navigating and using the NextGenTeens Youth Development Platform</p>
+        </div>
+
+        <div class="tutorial-nav">
+            <button class="active" onclick="scrollToSection('getting-started')">Getting Started</button>
+            <button onclick="scrollToSection('student-guide')">Student Guide</button>
+            <button onclick="scrollToSection('mentor-guide')">Mentor Guide</button>
+            <button onclick="scrollToSection('admin-guide')">Admin Guide</button>
+            <button onclick="scrollToSection('features')">Key Features</button>
+            <button onclick="scrollToSection('faq')">FAQ</button>
+        </div>
+
+        <div id="getting-started" class="tutorial-section">
+            <h2>🎯 Getting Started</h2>
+            <p>Welcome to NextGenTeens! This platform is designed to help teenagers grow spiritually, develop leadership skills, and build meaningful relationships through structured programs and mentorship.</p>
+            
+            <h3>Account Creation</h3>
+            <ul class="step-list">
+                <li>Visit the registration page and select your role (Student, Mentor, or Administrator)</li>
+                <li>Fill in your personal information including name, email, and other required details</li>
+                <li>Create a secure password and complete the registration process</li>
+                <li>Check your email for verification (if required)</li>
+                <li>Log in using your credentials on the login page</li>
+            </ul>
+
+            <h3>First Login</h3>
+            <p>After logging in for the first time, you'll be directed to your dashboard based on your role:</p>
+            <ul>
+                <li><strong>Students:</strong> Student Dashboard with assignments, progress tracking, and activities</li>
+                <li><strong>Mentors:</strong> Mentor Dashboard with student management and review tools</li>
+                <li><strong>Admins:</strong> Admin Dashboard with platform-wide management capabilities</li>
+            </ul>
+
+            <div class="highlight-box">
+                <strong>💡 Tip:</strong> Bookmark your dashboard for quick access to the platform!
+            </div>
+        </div>
+
+        <div id="student-guide" class="tutorial-section">
+            <h2>👨‍🎓 Student Guide</h2>
+            <p>As a student, you have access to a comprehensive set of tools to support your growth journey.</p>
+
+            <h3>Dashboard Navigation</h3>
+            <div class="feature-grid">
+                <div class="feature-card">
+                    <h4>📋 Tasks</h4>
+                    <p>View and submit assignments for your enrolled programs</p>
+                </div>
+                <div class="feature-card">
+                    <h4>🏆 Achievements</h4>
+                    <p>Track your earned badges and accomplishments</p>
+                </div>
+                <div class="feature-card">
+                    <h4>📊 Leaderboard</h4>
+                    <p>See your ranking among other students</p>
+                </div>
+                <div class="feature-card">
+                    <h4>👤 Profile</h4>
+                    <p>Manage your personal information and settings</p>
+                </div>
+            </div>
+
+            <h3>Submitting Assignments</h3>
+            <ul class="step-list">
+                <li>Navigate to the Tasks section from your dashboard</li>
+                <li>Select an assignment you want to complete</li>
+                <li>Review the assignment requirements and deadline</li>
+                <li>Complete the task (text, image, or video submission)</li>
+                <li>Submit your work for mentor review</li>
+                <li>Wait for feedback and approval status</li>
+            </ul>
+
+            <h3>Viewing Mentor Feedback</h3>
+            <p>After your submission is reviewed, you can view mentor comments:</p>
+            <ul>
+                <li>Go to your Tasks section</li>
+                <li>Look for assignments with "Approved" or "Rejected" status</li>
+                <li>Mentor feedback will be displayed below the assignment details</li>
+                <li>Use the feedback to improve future submissions</li>
+            </ul>
+
+            <h3>Daily Practice</h3>
+            <p>Track your spiritual growth through daily practices:</p>
+            <ul>
+                <li>Mark your daily Bible reading</li>
+                <li>Log your prayer time</li>
+                <li>Add journal notes for reflection</li>
+                <li>Build consistency streaks for achievements</li>
+            </ul>
+
+            <h3>Games & Learning Lab</h3>
+            <p>Engage with interactive learning experiences:</p>
+            <ul>
+                <li>Access the Learning Lab from your dashboard</li>
+                <li>Play educational games to reinforce learning</li>
+                <li>Earn points and track your progress</li>
+                <li>Compete with peers on leaderboards</li>
+            </ul>
+        </div>
+
+        <div id="mentor-guide" class="tutorial-section">
+            <h2>👨‍🏫 Mentor Guide</h2>
+            <p>Mentors play a crucial role in guiding students through their development journey.</p>
+
+            <h3>Dashboard Overview</h3>
+            <div class="feature-grid">
+                <div class="feature-card">
+                    <h4>📝 Reviews</h4>
+                    <p>Review and grade student submissions</p>
+                </div>
+                <div class="feature-card">
+                    <h4>📅 Attendance</h4>
+                    <p>Mark student attendance for sessions</p>
+                </div>
+                <div class="feature-card">
+                    <h4>📢 Activities</h4>
+                    <p>Publish announcements and activities</p>
+                </div>
+                <div class="feature-card">
+                    <h4>📈 Reports</h4>
+                    <p>Generate progress and performance reports</p>
+                </div>
+            </div>
+
+            <h3>Reviewing Submissions</h3>
+            <ul class="step-list">
+                <li>Access the Reviews section from your dashboard</li>
+                <li>View pending student submissions</li>
+                <li>Review the submitted content (text, images, videos)</li>
+                <li>Provide constructive feedback comments</li>
+                <li>Approve or reject the submission</li>
+                <li>Students will see your feedback after approval/rejection</li>
+            </ul>
+
+            <h3>Managing Attendance</h3>
+            <ul>
+                <li>Select the session you want to mark attendance for</li>
+                <li>Choose students from the list</li>
+                <li>Mark as Present, Absent, or Excused</li>
+                <li>Automatic strike system for absences</li>
+                <li>Submit attendance records</li>
+            </ul>
+
+            <h3>Publishing Activities</h3>
+            <p>Keep students engaged with regular activities:</p>
+            <ul>
+                <li>Create announcements for important updates</li>
+                <li>Share images and videos from sessions</li>
+                <li>Publish session summaries and reflections</li>
+                <li>Tag activities to specific programs</li>
+            </ul>
+
+            <h3>Student Progress Monitoring</h3>
+            <ul>
+                <li>View individual student progress reports</li>
+                <li>Track SGI (Student Growth Index) scores</li>
+                <li>Monitor attendance patterns</li>
+                <li>Identify students needing additional support</li>
+            </ul>
+        </div>
+
+        <div id="admin-guide" class="tutorial-section">
+            <h2>⚙️ Admin Guide</h2>
+            <p>Administrators have full control over platform configuration and user management.</p>
+
+            <h3>User Management</h3>
+            <ul>
+                <li>View all registered users (students, mentors, admins)</li>
+                <li>Manage user roles and permissions</li>
+                <li>Handle account suspensions and deactivations</li>
+                <li>Process deactivation requests</li>
+                <li>Monitor user activity and engagement</li>
+            </ul>
+
+            <h3>Program Management</h3>
+            <ul>
+                <li>Create and manage program offerings</li>
+                <li>Configure program details and descriptions</li>
+                <li>Enable/disable programs as needed</li>
+                <li>Manage session schedules and content</li>
+            </ul>
+
+            <h3>Platform Settings</h3>
+            <ul>
+                <li>Configure strike thresholds and policies</li>
+                <li>Set platform-wide announcements</li>
+                <li>Manage system configurations</li>
+                <li>Monitor platform statistics and analytics</li>
+            </ul>
+
+            <h3>Reports & Analytics</h3>
+            <ul>
+                <li>Generate comprehensive reports on user activity</li>
+                <li>Export attendance data</li>
+                <li>View leadership pathway progress</li>
+                <li>Analyze platform usage patterns</li>
+            </ul>
+        </div>
+
+        <div id="features" class="tutorial-section">
+            <h2>✨ Key Features</h2>
+            
+            <h3>🎯 Student Growth Index (SGI)</h3>
+            <p>The SGI is a comprehensive performance metric that tracks your overall development:</p>
+            <ul>
+                <li><strong>Attendance (15%):</strong> Regular participation in sessions</li>
+                <li><strong>Assignments (15%):</strong> Timely completion of tasks</li>
+                <li><strong>Practice Videos (15%):</strong> Practical skill demonstration</li>
+                <li><strong>Games & Quizzes (10%):</strong> Interactive learning engagement</li>
+                <li><strong>Leadership Activities (10%):</strong> Leadership skill development</li>
+                <li><strong>Spiritual Development (10%):</strong> Faith growth activities</li>
+                <li><strong>Mentor Evaluation (15%):</strong> Assessment from mentors</li>
+                <li><strong>AI Growth Assessment (10%):</strong> AI-powered progress analysis</li>
+            </ul>
+
+            <h3>🏆 Achievement System</h3>
+            <p>Earn badges for reaching milestones:</p>
+            <ul>
+                <li>Perfect Attendance - No missed sessions</li>
+                <li>Consistency Champion - On-time submissions for 4 weeks</li>
+                <li>Leadership Star - Outstanding leadership in activities</li>
+                <li>Voice Master - Excellence in voice training</li>
+                <li>Scripture Champion - Memorizing 10+ verses</li>
+                <li>Prayer Warrior - 30 consecutive prayer days</li>
+                <li>Kingdom Builder - Community impact achievements</li>
+                <li>CTFS Graduate - Completing the 12-week program</li>
+            </ul>
+
+            <h3>🤖 AI Coach</h3>
+            <p>Access personalized AI-powered coaching for:</p>
+            <ul>
+                <li>Goal discovery and setting</li>
+                <li>Reflection support and guidance</li>
+                <li>Communication skills coaching</li>
+                <li>Leadership development advice</li>
+                <li>Faith and spiritual discussions</li>
+                <li>Study support and learning tips</li>
+            </ul>
+
+            <h3>📱 Notifications</h3>
+            <p>Stay updated with real-time notifications for:</p>
+            <ul>
+                <li>Assignment deadlines and reminders</li>
+                <li>Submission feedback and approvals</li>
+                <li>Activity announcements from mentors</li>
+                <li>Platform updates and news</li>
+            </ul>
+        </div>
+
+        <div id="faq" class="tutorial-section">
+            <h2>❓ Frequently Asked Questions</h2>
+
+            <h3>How do I reset my password?</h3>
+            <p>Click on "Forgot Password" on the login page and follow the instructions sent to your email.</p>
+
+            <h3>Can I change my role after registration?</h3>
+            <p>Role changes require admin approval. Contact your program administrator for role modification requests.</p>
+
+            <h3>How are strikes calculated?</h3>
+            <p>Each unexcused absence generates one strike. Strike levels: 0-4 (Active), 5-7 (Warning), 8-9 (Critical), 10+ (Suspension review).</p>
+
+            <h3>What happens when I submit an assignment?</h3>
+            <p>Your submission goes to mentors for review. You'll receive feedback and an approval status. Approved submissions count toward your SGI score.</p>
+
+            <h3>How do I access the AI Coach?</h3>
+            <p>Click on "AI Coach" from your dashboard sidebar to start a conversation with your AI coaching assistant.</p>
+
+            <h3>Can I view other students' progress?</h3>
+            <p>You can view the leaderboard to see rankings, but individual student details are private to protect confidentiality.</p>
+
+            <h3>How do I earn achievements?</h3>
+            <p>Achievements are automatically earned when you meet specific criteria like attendance streaks, assignment consistency, or program completion.</p>
+
+            <h3>What if I have technical issues?</h3>
+            <p>Contact your program mentor or administrator for technical support. They can help resolve platform access or functionality issues.</p>
+        </div>
+
+        <div class="tutorial-section">
+            <h2>🎓 Need More Help?</h2>
+            <p>If you need additional assistance beyond this tutorial, please reach out to:</p>
+            <ul>
+                <li>Your program mentor for day-to-day guidance</li>
+                <li>Platform administrators for technical issues</li>
+                <li>Program coordinators for enrollment questions</li>
+            </ul>
+            <div class="highlight-box">
+                <strong>📧 Contact:</strong> Reach out through your program's communication channels or use the contact form on the platform.
+            </div>
+        </div>
+    </div>
+
+    <script>
+        function scrollToSection(sectionId) {
+            const section = document.getElementById(sectionId);
+            if (section) {
+                section.scrollIntoView({ behavior: 'smooth', block: 'start' });
+                
+                // Update active button
+                document.querySelectorAll('.tutorial-nav button').forEach(btn => {
+                    btn.classList.remove('active');
+                });
+                event.target.classList.add('active');
+            }
+        }
+    </script>
+</body>
+</html>

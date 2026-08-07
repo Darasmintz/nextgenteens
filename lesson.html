@@ -1,0 +1,251 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Lesson - NextGenTeens</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com" />
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800;900&display=swap" rel="stylesheet" />
+    <link rel="stylesheet" href="style.css" />
+    <link rel="icon" href="logo.png" type="image/png" />
+    <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2/dist/umd/supabase.min.js"></script>
+    <style>
+        .lesson-layout { display: grid; grid-template-columns: 1fr 340px; gap: 1.5rem; }
+        .lesson-main { min-width: 0; }
+        .lesson-sidebar { display: flex; flex-direction: column; gap: 1rem; }
+        .video-wrap { position: relative; width: 100%; padding-bottom: 56.25%; border-radius: var(--radius-lg); overflow: hidden; background: #000; margin-bottom: 1.25rem; }
+        .video-wrap iframe { position: absolute; top: 0; left: 0; width: 100%; height: 100%; border: none; }
+        .video-placeholder { position: absolute; top: 0; left: 0; width: 100%; height: 100%; display: flex; flex-direction: column; align-items: center; justify-content: center; background: var(--secondary); color: white; gap: 0.75rem; cursor: pointer; transition: background var(--transition); }
+        .video-placeholder:hover { background: #1a2744; }
+        .video-placeholder-icon { font-size: 4rem; }
+        .lesson-tabs { display: flex; gap: 0; border-bottom: 2px solid var(--border); margin-bottom: 1.25rem; }
+        .lesson-tab { padding: 0.75rem 1.25rem; font-weight: 600; font-size: 0.875rem; color: var(--text-muted); border-bottom: 2px solid transparent; margin-bottom: -2px; cursor: pointer; transition: all var(--transition); background: none; border-top: none; border-left: none; border-right: none; }
+        .lesson-tab:hover { color: var(--primary); }
+        .lesson-tab.active { color: var(--primary); border-bottom-color: var(--primary); }
+        .tab-panel { display: none; }
+        .tab-panel.active { display: block; }
+        .notes-content { line-height: 1.8; color: var(--text); }
+        .notes-content h3 { margin: 1.25rem 0 0.5rem; color: var(--secondary); }
+        .notes-content ul { padding-left: 1.5rem; margin-bottom: 1rem; }
+        .notes-content li { margin-bottom: 0.375rem; }
+        .notes-content blockquote { border-left: 3px solid var(--primary); padding-left: 1rem; margin: 1rem 0; color: var(--text-light); font-style: italic; }
+        .session-nav { display: flex; justify-content: space-between; gap: 1rem; margin-top: 1rem; }
+        .session-list-item { display: flex; align-items: center; gap: 0.75rem; padding: 0.75rem; border-radius: var(--radius-md); cursor: pointer; transition: all var(--transition); border: 1px solid var(--border-light); }
+        .session-list-item:hover { background: rgba(37,99,235,0.05); border-color: var(--primary-light); }
+        .session-list-item.active { background: rgba(37,99,235,0.08); border-color: var(--primary); }
+        .session-list-item.completed { border-color: var(--success); }
+        .session-num { width: 28px; height: 28px; border-radius: 50%; background: var(--border); display: flex; align-items: center; justify-content: center; font-size: 0.75rem; font-weight: 700; flex-shrink: 0; }
+        .session-num.completed { background: var(--success); color: white; }
+        .session-num.active { background: var(--primary); color: white; }
+        .session-info { flex: 1; min-width: 0; }
+        .session-info h5 { font-size: 0.8rem; font-weight: 600; margin: 0; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+        .session-info p { font-size: 0.7rem; color: var(--text-muted); margin: 0; }
+        .progress-ring { width: 60px; height: 60px; }
+        .progress-ring circle { fill: none; stroke-width: 6; }
+        .progress-ring .bg { stroke: var(--border); }
+        .progress-ring .fill { stroke: var(--primary); stroke-linecap: round; transform: rotate(-90deg); transform-origin: 50% 50%; transition: stroke-dashoffset 0.5s; }
+        @media (max-width: 900px) {
+            .lesson-layout { grid-template-columns: 1fr; }
+            .lesson-sidebar { order: -1; }
+        }
+    </style>
+</head>
+<body class="dashboard-page">
+    <!-- Page Loader -->
+    <div class="page-loader" id="pageLoader">
+        <div class="loader-spinner"></div>
+        <div class="loader-text">Loading...</div>
+    </div>
+
+    <aside class="sidebar" id="sidebar">
+        <div class="sidebar-header">
+            <img src="logo.png" alt="NextGenTeens" class="sidebar-logo" />
+            <span class="sidebar-brand">NextGenTeens</span>
+            <button class="sidebar-close" onclick="toggleSidebar()">&#10005;</button>
+        </div>
+                        <nav class="sidebar-nav">
+            <a href="student-dashboard.html" class="nav-item "><span class="nav-icon">&#128202;</span> Dashboard</a>
+            <a href="programs.html" class="nav-item "><span class="nav-icon">&#128218;</span> Programs</a>
+            <a href="ctfs.html" class="nav-item "><span class="nav-icon">&#9962;</span> CTFS</a>
+            <a href="choir.html" class="nav-item "><span class="nav-icon">&#127925;</span> Choir</a>
+            <a href="lesson.html" class="nav-item active"><span class="nav-icon">&#128214;</span> Lessons</a>
+            <a href="tasks.html" class="nav-item "><span class="nav-icon">&#128221;</span> Tasks</a>
+            <a href="activity-feed.html" class="nav-item "><span class="nav-icon">&#128226;</span> Activity Feed</a>
+            <a href="leaderboard.html" class="nav-item "><span class="nav-icon">&#128200;</span> Leaderboard</a>
+            <a href="games.html" class="nav-item "><span class="nav-icon">&#127918;</span> Learning Lab</a>
+            <a href="ai-coach.html" class="nav-item "><span class="nav-icon">&#129302;</span> AI Coach</a>
+            <a href="notifications.html" class="nav-item "><span class="nav-icon">&#128276;</span> Notifications</a>
+            <a href="profile.html" class="nav-item "><span class="nav-icon">&#128100;</span> Profile</a>
+            <a href="achievements.html" class="nav-item "><span class="nav-icon">&#127942;</span> Achievements</a>
+            <a href="settings.html" class="nav-item "><span class="nav-icon">&#9881;</span> Settings</a>
+            <a href="index.html" class="nav-item logout" onclick="handleLogout()"><span class="nav-icon">&#128682;</span> Logout</a>
+        </nav>
+    </aside>
+
+    <main class="dashboard-main">
+        <header class="topbar">
+            <button class="menu-toggle" onclick="toggleSidebar()">&#9776;</button>
+            <h1 class="topbar-title" id="lessonTopbarTitle">&#128214; Lesson</h1>
+            <div class="topbar-user">
+                <span id="userNameDisplay">Student</span>
+                <a href="profile.html" class="user-avatar-link">
+                    <img class="user-avatar-img" id="userAvatarImg" src="" style="display:none;" alt="Profile" />
+                    <span class="user-avatar" id="userAvatar">&#129489;&#8205;&#127891;</span>
+                </a>
+            </div>
+        </header>
+
+        <div class="dashboard-content">
+            <!-- Breadcrumb & Program Selector -->
+            <div style="display:flex;align-items:center;justify-content:space-between;gap:1rem;flex-wrap:wrap;margin-bottom:1rem;">
+                <div style="display:flex;align-items:center;gap:0.5rem;font-size:0.8rem;color:var(--text-muted);">
+                    <a href="programs.html" style="color:var(--text-muted);">Programs</a>
+                    <span>&#8250;</span>
+                    <span id="breadcrumbProgram" style="font-weight:600;color:var(--text);">CTFS</span>
+                    <span>&#8250;</span>
+                    <span id="breadcrumbSession" style="color:var(--text);">Session</span>
+                </div>
+                <div style="display:flex;align-items:center;gap:0.5rem;">
+                    <label for="programSelect" style="font-weight:600;font-size:0.85rem;color:var(--text-light);">&#128218; Select Program:</label>
+                    <select id="programSelect" onchange="onProgramChange(this.value)" style="padding:0.4rem 0.8rem;border:2px solid var(--border);border-radius:var(--radius-md);font-family:var(--font);font-size:0.875rem;background:var(--background);color:var(--text);cursor:pointer;">
+                        <option value="">Loading programs...</option>
+                    </select>
+                </div>
+            </div>
+
+            <div class="lesson-layout">
+                <!-- MAIN LESSON AREA -->
+                <div class="lesson-main">
+                    <!-- Video -->
+                    <div class="video-wrap" id="videoWrap">
+                        <div class="video-placeholder" id="videoPlaceholder" onclick="loadVideo()">
+                            <span class="video-placeholder-icon">&#9654;&#65039;</span>
+                            <p style="font-weight:600;margin:0;">Click to load lesson video</p>
+                            <p style="font-size:0.8rem;color:rgba(255,255,255,0.6);margin:0;" id="videoTitle">Loading...</p>
+                        </div>
+                    </div>
+
+                    <!-- Lesson Title & Meta -->
+                    <div style="margin-bottom:1.25rem;">
+                        <h2 id="lessonTitle" style="margin-bottom:0.25rem;">Loading lesson...</h2>
+                        <div style="display:flex;align-items:center;gap:1rem;flex-wrap:wrap;">
+                            <span id="lessonProgram" style="font-size:0.8rem;color:var(--text-muted);"></span>
+                            <span id="lessonWeek" style="font-size:0.8rem;color:var(--text-muted);"></span>
+                            <span id="completionBadge" class="badge info" style="display:none;">&#9203; In Progress</span>
+                        </div>
+                    </div>
+
+                    <!-- Tabs -->
+                    <div class="lesson-tabs">
+                        <button class="lesson-tab active" onclick="switchTab('notes')">&#128214; Notes</button>
+                        <button class="lesson-tab" onclick="switchTab('assignment')">&#128221; Assignment</button>
+                        <button class="lesson-tab" onclick="switchTab('quiz')">&#129504; Quiz</button>
+                        <button class="lesson-tab" onclick="switchTab('reflection')">&#128173; Reflection</button>
+                    </div>
+
+                    <!-- Notes Tab -->
+                    <div id="tab-notes" class="tab-panel active">
+                        <div class="notes-content" id="lessonNotes">
+                            <div style="text-align:center;padding:2rem;color:var(--text-muted);">Loading lesson notes...</div>
+                        </div>
+                    </div>
+
+                    <!-- Assignment Tab -->
+                    <div id="tab-assignment" class="tab-panel">
+                        <div id="assignmentArea">
+                            <div style="text-align:center;padding:2rem;color:var(--text-muted);">Loading assignment...</div>
+                        </div>
+                    </div>
+
+                    <!-- Quiz Tab -->
+                    <div id="tab-quiz" class="tab-panel">
+                        <div id="quizContainer">
+                            <div style="text-align:center;padding:2rem;">
+                                <div style="font-size:3rem;margin-bottom:1rem;">&#129504;</div>
+                                <h3>Knowledge Check</h3>
+                                <p style="color:var(--text-muted);margin-bottom:1.5rem;">Test your understanding of this lesson.</p>
+                                <button class="btn btn-primary" onclick="startLessonQuiz()">Start Quiz</button>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Reflection Tab -->
+                    <div id="tab-reflection" class="tab-panel">
+                        <div class="dashboard-section" style="margin:0;">
+                            <h3 style="margin-bottom:1rem;">&#128173; Reflection Journal</h3>
+                            <p style="color:var(--text-muted);margin-bottom:1rem;">Take a moment to reflect on what you learned today. What stood out? What will you apply?</p>
+                            <div id="reflectionPrompts" style="margin-bottom:1rem;"></div>
+                            <div class="form-group">
+                                <label>Your Reflection</label>
+                                <textarea id="reflectionText" rows="6" placeholder="Write your reflection here..." style="width:100%;padding:0.75rem 1rem;border:2px solid var(--border);border-radius:var(--radius-md);font-family:var(--font);resize:vertical;line-height:1.7;"></textarea>
+                            </div>
+                            <button class="btn btn-primary" onclick="saveReflection()">&#128190; Save Reflection</button>
+                            <div id="reflectionStatus" style="margin-top:0.75rem;"></div>
+                        </div>
+                    </div>
+
+                    <!-- Session Navigation -->
+                    <div class="session-nav">
+                        <button id="prevSessionBtn" class="btn btn-outline" onclick="navigateSession(-1)" style="display:none;">&#8592; Previous</button>
+                        <div style="flex:1;"></div>
+                        <button id="markCompleteBtn" class="btn btn-success" onclick="markLessonComplete()">&#9989; Mark Complete</button>
+                        <button id="nextSessionBtn" class="btn btn-primary" onclick="navigateSession(1)" style="display:none;">Next &#8594;</button>
+                    </div>
+                </div>
+
+                <!-- SIDEBAR -->
+                <div class="lesson-sidebar">
+                    <!-- Progress Card -->
+                    <div class="dashboard-section" style="text-align:center;">
+                        <h4 style="margin-bottom:1rem;">Your Progress</h4>
+                        <svg class="progress-ring" viewBox="0 0 60 60">
+                            <circle class="bg" cx="30" cy="30" r="27"/>
+                            <circle class="fill" id="progressRing" cx="30" cy="30" r="27"
+                                stroke-dasharray="169.6" stroke-dashoffset="169.6"/>
+                        </svg>
+                        <div style="font-size:1.5rem;font-weight:700;color:var(--primary);margin:0.5rem 0;" id="progressPct">0%</div>
+                        <div style="font-size:0.8rem;color:var(--text-muted);" id="progressSessions">0 of 0 sessions</div>
+                    </div>
+
+                    <!-- Attendance -->
+                    <div class="dashboard-section">
+                        <h4 style="margin-bottom:0.75rem;">&#128197; Attendance</h4>
+                        <div style="display:flex;gap:0.5rem;flex-wrap:wrap;">
+                            <button class="btn btn-sm btn-success" onclick="markMyAttendance('present')">&#9989; Present</button>
+                            <button class="btn btn-sm btn-outline" onclick="markMyAttendance('excused')">&#9888;&#65039; Excused</button>
+                        </div>
+                        <p id="attendanceStatus" style="font-size:0.75rem;color:var(--text-muted);margin-top:0.5rem;margin-bottom:0;">Not marked yet</p>
+                    </div>
+
+                    <!-- Session List -->
+                    <div class="dashboard-section">
+                        <h4 style="margin-bottom:0.75rem;">&#128203; All Sessions</h4>
+                        <div id="sessionList" style="display:flex;flex-direction:column;gap:0.375rem;max-height:400px;overflow-y:auto;"></div>
+                    </div>
+
+                    <!-- Quick Actions -->
+                    <div class="dashboard-section">
+                        <h4 style="margin-bottom:0.75rem;">&#9889; Quick Actions</h4>
+                        <div style="display:flex;flex-direction:column;gap:0.5rem;">
+                            <a href="games.html" class="btn btn-outline btn-sm">&#127918; Learning Lab</a>
+                            <a href="ai-coach.html" class="btn btn-outline btn-sm">&#129302; Ask AI Coach</a>
+                            <a href="tasks.html" class="btn btn-outline btn-sm">&#128221; My Tasks</a>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </main>
+
+    <div class="modal-overlay hidden" id="modalOverlay">
+        <div class="modal" id="modalContent">
+            <button class="modal-close" onclick="closeModal()">&#10005;</button>
+            <div id="modalBody"></div>
+        </div>
+    </div>
+
+    <script src="script.js"></script>
+    <script src="lesson.js"></script>
+</body>
+</html>

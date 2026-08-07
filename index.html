@@ -1,0 +1,373 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>NextGenTeens - Youth Development Platform</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com" />
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800;900&display=swap" rel="stylesheet" />
+    <link rel="stylesheet" href="style.css" />
+    <link rel="icon" href="logo.png" />
+    <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2/dist/umd/supabase.min.js"></script>
+</head>
+<body>
+    <!-- Page Loader -->
+    <div class="page-loader" id="pageLoader">
+        <div class="loader-spinner"></div>
+        <div class="loader-text">Loading...</div>
+    </div>
+
+    <!-- ==================== NAVIGATION ==================== -->
+    <nav class="navbar">
+        <div class="nav-container">
+            <div class="nav-brand">
+                <img src="logo.png" alt="NextGenTeens Logo" class="nav-logo" />
+                <span class="nav-brand-text">NextGenTeens</span>
+            </div>
+            <div class="nav-links" id="navLinks">
+                <a href="index.html">Home</a>
+                <a href="#programs">Programs</a>
+                <a href="#features">Features</a>
+                <a href="#about">About</a>
+                <a href="login.html" class="btn btn-outline">Login</a>
+                <a href="register.html" class="btn btn-primary">Get Started</a>
+            </div>
+            <button class="mobile-menu-btn" onclick="toggleMobileMenu()" aria-label="Toggle menu">&#9776;</button>
+        </div>
+    </nav>
+
+    <!-- ==================== HERO SECTION ==================== -->
+    <section class="hero">
+        <div class="hero-container">
+            <div class="hero-content">
+                <span class="hero-badge">&#128640; Youth Development Platform</span>
+                <h1 class="hero-title">
+                    Raising the Next Generation of
+                    <span class="text-gradient">Leaders & Mentors</span>
+                </h1>
+                <p class="hero-subtitle">
+                    NextGenTeens equips teenagers with spiritual, leadership, communication,
+                    mentorship, and life skills through structured programs, mentorship systems,
+                    and AI-powered growth support.
+                </p>
+                <div class="hero-actions">
+                    <a href="register.html" class="btn btn-primary btn-large">
+                        Join Now &#8212; It's Free
+                    </a>
+                    <a href="#programs" class="btn btn-outline btn-large">
+                        Explore Programs
+                    </a>
+                </div>
+                <div class="hero-stats" id="heroStats">
+                    <div class="stat-item">
+                        <span class="stat-number" id="totalStudents">0</span>
+                        <span class="stat-label">Active Students</span>
+                    </div>
+                    <div class="stat-divider"></div>
+                    <div class="stat-item">
+                        <span class="stat-number" id="totalMentors">0</span>
+                        <span class="stat-label">Mentors</span>
+                    </div>
+                    <div class="stat-divider"></div>
+                    <div class="stat-item">
+                        <span class="stat-number" id="totalPrograms">0</span>
+                        <span class="stat-label">Active Programs</span>
+                    </div>
+                    <div class="stat-divider"></div>
+                    <div class="stat-item">
+                        <span class="stat-number">24/7</span>
+                        <span class="stat-label">AI Coach Available</span>
+                    </div>
+                </div>
+            </div>
+            <div class="hero-visual">
+                <div class="hero-card-animation">
+                    <div class="floating-card card-1">
+                        <span>&#127942;</span> Leadership
+                    </div>
+                    <div class="floating-card card-2">
+                        <span>&#127925;</span> Voice Training
+                    </div>
+                    <div class="floating-card card-3">
+                        <span>&#129302;</span> AI Coach
+                    </div>
+                    <div class="floating-card card-4">
+                        <span>&#128200;</span> Growth Index
+                    </div>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- ==================== PROGRAMS SECTION ==================== -->
+    <section id="programs" class="programs-section">
+        <div class="container">
+            <div class="section-header">
+                <span class="section-tag">Our Programs</span>
+                <h2 class="section-title">Transformational Growth Pathways</h2>
+                <p class="section-subtitle">
+                    Choose a program that fits your journey and start growing today.
+                </p>
+            </div>
+            <div class="programs-grid" id="homePrograms">
+                <!-- CTFS -->
+                <div class="program-card featured">
+                    <div class="program-card-header">
+                        <span class="program-icon">&#9962;</span>
+                        <span class="program-badge featured-badge">&#128293; Popular</span>
+                    </div>
+                    <h3 class="program-title">CTFS</h3>
+                    <p class="program-subtitle">Christian Teenage Fellowship Session</p>
+                    <div class="program-meta">
+                        <span>&#128197; 12 Weeks</span>
+                        <span>&#128198; Sat & Sun</span>
+                        <span>&#127919; 12+ Years</span>
+                    </div>
+                    <p class="program-theme">"Become Who God Called You To Be"</p>
+                    <div class="program-features">
+                        <span>&#128214; Foundation</span>
+                        <span>&#10084;&#65039; Love</span>
+                        <span>&#129504; Mindset</span>
+                        <span>&#128081; Leadership</span>
+                        <span>&#128591; Faith</span>
+                        <span>&#128170; Character</span>
+                    </div>
+                    <a href="register.html" class="btn btn-primary program-cta">Enroll Now</a>
+                </div>
+
+                <!-- TCVLMDP -->
+                <div class="program-card">
+                    <div class="program-card-header">
+                        <span class="program-icon">&#127925;</span>
+                        <span class="program-badge">Active</span>
+                    </div>
+                    <h3 class="program-title">TCVLMDP</h3>
+                    <p class="program-subtitle">Teen Choir Voice, Leadership & Mentorship Development Project</p>
+                    <div class="program-features">
+                        <span>&#127908; Voice Training</span>
+                        <span>&#128084; Leadership</span>
+                        <span>&#129309; Mentorship</span>
+                        <span>&#128591; Spiritual Growth</span>
+                        <span>&#128176; Financial Literacy</span>
+                        <span>&#129504; Life Skills</span>
+                    </div>
+                    <a href="register.html" class="btn btn-primary program-cta">Enroll Now</a>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- ==================== FEATURES SECTION ==================== -->
+    <section id="features" class="features-section">
+        <div class="container">
+            <div class="section-header">
+                <span class="section-tag">Features</span>
+                <h2 class="section-title">Everything You Need to Grow</h2>
+                <p class="section-subtitle">
+                    A complete ecosystem designed for teenage development.
+                </p>
+            </div>
+            <div class="features-grid">
+                <div class="feature-item">
+                    <span class="feature-icon">&#128203;</span>
+                    <h4>Attendance & Strike System</h4>
+                    <p>Track participation with automated strike system and status progression.</p>
+                </div>
+                <div class="feature-item">
+                    <span class="feature-icon">&#128221;</span>
+                    <h4>Assignments & Submissions</h4>
+                    <p>Submit videos, images, reflections, and complete quizzes and games.</p>
+                </div>
+                <div class="feature-item">
+                    <span class="feature-icon">&#127918;</span>
+                    <h4>Interactive Learning Lab</h4>
+                    <p>Gamified learning with lyrics arrangement, memory puzzles, and more.</p>
+                </div>
+                <div class="feature-item">
+                    <span class="feature-icon">&#127942;</span>
+                    <h4>Achievements & Leaderboard</h4>
+                    <p>Earn badges and track your growth with the Student Growth Index (SGI).</p>
+                </div>
+                <div class="feature-item">
+                    <span class="feature-icon">&#129302;</span>
+                    <h4>AI Coach</h4>
+                    <p>24/7 AI-powered coaching, goal discovery, and growth assessment.</p>
+                </div>
+                <div class="feature-item">
+                    <span class="feature-icon">&#128101;</span>
+                    <h4>Mentorship Pathway</h4>
+                    <p>Progress from Student to Junior Mentor to Mentor with clear pathways.</p>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- ==================== ABOUT SECTION ==================== -->
+    <section id="about" class="about-section">
+        <div class="container">
+            <div class="section-header">
+                <span class="section-tag">About Us</span>
+                <h2 class="section-title">JTF Youth Development</h2>
+                <p class="section-subtitle">
+                    Committed to raising disciplined, purpose-driven, spiritually grounded, and socially impactful young people.
+                </p>
+            </div>
+            <div class="about-grid">
+                <div class="about-card">
+                    <div class="about-icon">&#128065;&#65039;</div>
+                    <h4>Vision</h4>
+                    <p>To raise a generation of disciplined, purpose-driven, spiritually grounded, and impactful young people who positively influence society through leadership, character, service, and excellence.</p>
+                </div>
+                <div class="about-card">
+                    <div class="about-icon">&#127919;</div>
+                    <h4>Mission</h4>
+                    <p>To provide teenagers with structured opportunities for growth, mentorship, leadership development, spiritual formation, practical learning, and community engagement through a technology-driven platform.</p>
+                </div>
+                <div class="about-card">
+                    <div class="about-icon">&#128161;</div>
+                    <h4>Core Values</h4>
+                    <p>Faith, Leadership, Excellence, Integrity, Service, Community, Growth, and Purpose-driven living.</p>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- ==================== LEADERSHIP PATHWAY ==================== -->
+    <section class="pathway-section">
+        <div class="container">
+            <div class="section-header">
+                <span class="section-tag">Growth Pathway</span>
+                <h2 class="section-title">Your Leadership Journey</h2>
+                <p class="section-subtitle">
+                    Progress from student to mentor through demonstrated growth and character.
+                </p>
+            </div>
+            <div class="pathway-flow">
+                <div class="pathway-step">
+                    <div class="step-number">1</div>
+                    <div class="step-icon">&#129489;&#8205;&#127891;</div>
+                    <h4>Student</h4>
+                    <p>Start your growth journey</p>
+                </div>
+                <div class="pathway-arrow">&#8594;</div>
+                <div class="pathway-step">
+                    <div class="step-number">2</div>
+                    <div class="step-icon">&#11088;</div>
+                    <h4>Outstanding Performer</h4>
+                    <p>Demonstrate excellence</p>
+                </div>
+                <div class="pathway-arrow">&#8594;</div>
+                <div class="pathway-step">
+                    <div class="step-number">3</div>
+                    <div class="step-icon">&#128104;&#8205;&#127891;</div>
+                    <h4>Student Leader</h4>
+                    <p>Lead and inspire others</p>
+                </div>
+                <div class="pathway-arrow">&#8594;</div>
+                <div class="pathway-step">
+                    <div class="step-number">4</div>
+                    <div class="step-icon">&#128104;&#8205;&#127979;</div>
+                    <h4>Junior Mentor</h4>
+                    <p>Guide younger students</p>
+                </div>
+                <div class="pathway-arrow">&#8594;</div>
+                <div class="pathway-step">
+                    <div class="step-number">5</div>
+                    <div class="step-icon">&#127941;</div>
+                    <h4>Mentor</h4>
+                    <p>Develop future leaders</p>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- ==================== CTA SECTION ==================== -->
+    <section class="cta-section">
+        <div class="container">
+            <div class="cta-content">
+                <h2>Ready to Begin Your Journey?</h2>
+                <p>Join hundreds of teenagers growing in leadership, faith, and purpose.</p>
+                <div class="cta-actions">
+                    <a href="register.html" class="btn btn-white btn-large">Get Started Today</a>
+                    <a href="login.html" class="btn btn-outline-white btn-large">Sign In</a>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- ==================== FOOTER ==================== -->
+    <footer class="footer">
+        <div class="container">
+            <div class="footer-content">
+                <div class="footer-brand">
+                    <img src="logo.png" alt="NextGenTeens Logo" class="footer-logo" />
+                    <span class="footer-brand-text">NextGenTeens</span>
+                    <p>Youth Development, Mentorship & Leadership Platform</p>
+                </div>
+                <div class="footer-links">
+                    <div class="footer-column">
+                        <h4>Platform</h4>
+                        <a href="index.html">Home</a>
+                        <a href="#programs">Programs</a>
+                        <a href="#features">Features</a>
+                        <a href="login.html">Login</a>
+                        <a href="register.html">Register</a>
+                    </div>
+                    <div class="footer-column">
+                        <h4>Programs</h4>
+                        <a href="ctfs.html">CTFS</a>
+                        <a href="choir.html">TCVLMDP</a>
+                    </div>
+                    <div class="footer-column">
+                        <h4>Organization</h4>
+                        <a href="#about">JTF Youth Development</a>
+                        <a href="#about">About Us</a>
+                        <a href="#">Contact</a>
+                    </div>
+                </div>
+            </div>
+            <div class="footer-bottom">
+                <p>&copy; 2026 NextGenTeens &#8212; JTF Youth Development. All rights reserved.</p>
+            </div>
+        </div>
+    </footer>
+
+    <script src="script.js"></script>
+    <script>
+        // Load live statistics on home page with proper dependency waiting
+        document.addEventListener('DOMContentLoaded', async function() {
+            let attempts = 0;
+            while (typeof getSupabase === 'undefined' && attempts < 50) {
+                await new Promise(r => setTimeout(r, 100));
+                attempts++;
+            }
+            
+            if (typeof getSupabase === 'undefined') {
+                return;
+            }
+            
+            try {
+                const client = await getSupabase();
+                if (!client) return;
+                
+                // A security-definer RPC exposes only aggregate totals to visitors;
+                // individual profiles remain protected by row-level security.
+                const { data: stats, error } = await client.rpc('platform_public_stats');
+                if (error) throw error;
+                const totals = Array.isArray(stats) ? stats[0] : stats;
+                if (!totals) return;
+
+                const totalStudentsEl = document.getElementById('totalStudents');
+                if (totalStudentsEl) totalStudentsEl.textContent = totals.total_students || 0;
+                const totalMentorsEl = document.getElementById('totalMentors');
+                if (totalMentorsEl) totalMentorsEl.textContent = totals.total_mentors || 0;
+                const totalProgramsEl = document.getElementById('totalPrograms');
+                if (totalProgramsEl) totalProgramsEl.textContent = totals.total_programs || 0;
+            } catch (error) {
+                // Silently skip statistics if not authenticated
+            }
+        });
+    </script>
+</body>
+</html>

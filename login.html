@@ -1,0 +1,75 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Login - NextGenTeens</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com" />
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800;900&display=swap" rel="stylesheet" />
+    <link rel="stylesheet" href="style.css" />
+    <link rel="icon" href="logo.png" />
+    <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2/dist/umd/supabase.min.js"></script>
+</head>
+<body>
+    <!-- Page Loader -->
+    <div class="page-loader" id="pageLoader">
+        <div class="loader-spinner"></div>
+        <div class="loader-text">Loading...</div>
+    </div>
+
+    <div class="auth-page">
+        <div class="auth-container">
+            <div class="auth-card">
+                <div class="auth-header">
+                    <div class="auth-brand">
+                        <img src="logo.png" alt="NextGenTeens" class="auth-logo" />
+                        <span>NextGenTeens</span>
+                    </div>
+                    <h1>Welcome Back</h1>
+                    <p class="auth-subtitle">Sign in to continue your growth journey</p>
+                </div>
+
+                <div class="auth-role-toggle">
+                    <button class="role-btn active" data-role="student" onclick="setLoginRole('student')">
+                        &#129489;&#8205;&#127891; Student
+                    </button>
+                    <button class="role-btn" data-role="mentor" onclick="setLoginRole('mentor')">
+                        &#128104;&#8205;&#127979; Mentor
+                    </button>
+                    <button class="role-btn" data-role="admin" onclick="setLoginRole('admin')">
+                        &#9881;&#65039; Admin
+                    </button>
+                </div>
+
+                <form id="loginForm" class="auth-form" onsubmit="handleLogin(event)">
+                    <div class="form-group">
+                        <label for="loginEmail">Email Address</label>
+                        <input type="email" id="loginEmail" placeholder="you@example.com" required />
+                    </div>
+                    <div class="form-group">
+                        <label for="loginPassword">Password</label>
+                        <input type="password" id="loginPassword" placeholder="Enter your password" required />
+                    </div>
+                    <div class="form-options">
+                        <label class="checkbox-label">
+                            <input type="checkbox" /> Remember me
+                        </label>
+                        <a href="#" class="forgot-link" onclick="handleForgotPassword(event)">Forgot password?</a>
+                    </div>
+                    <button type="submit" class="btn btn-primary btn-full">Sign In</button>
+                </form>
+
+                <div class="auth-footer">
+                    <p>Don't have an account? <a href="register.html">Register now</a></p>
+                    <p class="auth-org">&#169; JTF Youth Development</p>
+                </div>
+
+                <div id="authError" class="auth-error hidden"></div>
+                <div id="authSuccess" class="auth-success hidden"></div>
+            </div>
+        </div>
+    </div>
+    <script src="script.js"></script>
+</body>
+</html>

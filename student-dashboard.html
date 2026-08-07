@@ -1,0 +1,187 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Student Dashboard - NextGenTeens</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com" />
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800;900&display=swap" rel="stylesheet" />
+    <link rel="stylesheet" href="style.css" />
+    <link rel="icon" href="logo.png" />
+    <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2/dist/umd/supabase.min.js"></script>
+</head>
+<body class="dashboard-page">
+    <!-- Page Loader -->
+    <div class="page-loader" id="pageLoader">
+        <div class="loader-spinner"></div>
+        <div class="loader-text">Loading...</div>
+    </div>
+
+    <aside class="sidebar" id="sidebar">
+        <div class="sidebar-header">
+            <img src="logo.png" alt="NextGenTeens" class="sidebar-logo" />
+            <span class="sidebar-brand">NextGenTeens</span>
+            <button class="sidebar-close" onclick="toggleSidebar()">&#10005;</button>
+        </div>
+                        <nav class="sidebar-nav">
+            <a href="student-dashboard.html" class="nav-item active"><span class="nav-icon">&#128202;</span> Dashboard</a>
+            <a href="programs.html" class="nav-item "><span class="nav-icon">&#128218;</span> Programs</a>
+            <a href="ctfs.html" class="nav-item "><span class="nav-icon">&#9962;</span> CTFS</a>
+            <a href="choir.html" class="nav-item "><span class="nav-icon">&#127925;</span> Choir</a>
+            <a href="lesson.html" class="nav-item "><span class="nav-icon">&#128214;</span> Lessons</a>
+            <a href="tasks.html" class="nav-item "><span class="nav-icon">&#128221;</span> Tasks</a>
+            <a href="activity-feed.html" class="nav-item "><span class="nav-icon">&#128226;</span> Activity Feed</a>
+            <a href="leaderboard.html" class="nav-item "><span class="nav-icon">&#128200;</span> Leaderboard</a>
+            <a href="games.html" class="nav-item "><span class="nav-icon">&#127918;</span> Learning Lab</a>
+            <a href="ai-coach.html" class="nav-item "><span class="nav-icon">&#129302;</span> AI Coach</a>
+            <a href="notifications.html" class="nav-item "><span class="nav-icon">&#128276;</span> Notifications</a>
+            <a href="profile.html" class="nav-item "><span class="nav-icon">&#128100;</span> Profile</a>
+            <a href="achievements.html" class="nav-item "><span class="nav-icon">&#127942;</span> Achievements</a>
+            <a href="settings.html" class="nav-item "><span class="nav-icon">&#9881;</span> Settings</a>
+            <a href="index.html" class="nav-item logout" onclick="handleLogout()"><span class="nav-icon">&#128682;</span> Logout</a>
+        </nav>
+    </aside>
+
+    <main class="dashboard-main">
+        <header class="topbar">
+            <button class="menu-toggle" onclick="toggleSidebar()">&#9776;</button>
+            <h1 class="topbar-title">Dashboard</h1>
+            <div class="topbar-user">
+                <span id="userNameDisplay">Student</span>
+                <a href="profile.html" class="user-avatar-link">
+                    <img class="user-avatar-img" id="userAvatarImg" src="" style="display:none;" alt="Profile" />
+                    <span class="user-avatar" id="userAvatar">&#129489;&#8205;&#127891;</span>
+                </a>
+            </div>
+        </header>
+
+        <div class="dashboard-content" id="dashboardContent">
+            <section class="welcome-section">
+                <div class="welcome-text">
+                    <h2>Welcome back, <span id="studentName">Student</span>! &#128075;</h2>
+                    <p>Continue your growth journey today.</p>
+                </div>
+                <div class="welcome-stats">
+                    <div class="stat-card">
+                        <span class="stat-value" id="strikeCount">0</span>
+                        <span class="stat-label">Strikes</span>
+                    </div>
+                    <div class="stat-card">
+                        <span class="stat-value" id="sgiScore">0%</span>
+                        <span class="stat-label">SGI Score</span>
+                    </div>
+                    <div class="stat-card">
+                        <span class="stat-value" id="achievementCount">0</span>
+                        <span class="stat-label">Achievements</span>
+                    </div>
+                    <div class="stat-card">
+                        <span class="stat-value" id="attendancePercent">0%</span>
+                        <span class="stat-label">Attendance</span>
+                    </div>
+                </div>
+            </section>
+
+            <section class="quick-actions">
+                <button class="quick-action" onclick="window.location.href='tasks.html'">
+                    <span>&#128221;</span> View Tasks
+                </button>
+                <button class="quick-action" onclick="window.location.href='ctfs.html'">
+                    <span>&#9962;</span> CTFS Session
+                </button>
+                <button class="quick-action" onclick="window.location.href='ai-coach.html'">
+                    <span>&#129302;</span> AI Coach
+                </button>
+                <button class="quick-action" onclick="window.location.href='leaderboard.html'">
+                    <span>&#128200;</span> Leaderboard
+                </button>
+            </section>
+
+            <section class="dashboard-section devotional-section" id="dailyDevotional">
+                <div class="section-heading">
+                    <div>
+                        <h3>Daily Growth</h3>
+                        <p class="section-subtitle">Build a daily rhythm of Scripture and prayer.</p>
+                    </div>
+                    <span class="streak-badge">&#128293; <span id="spiritualStreak">0</span>-day streak</span>
+                </div>
+                <div class="devotional-grid">
+                    <article class="devotional-card">
+                        <span class="devotional-icon">&#128214;</span>
+                        <div><h4>Daily Bible Reading</h4><p id="dailyBibleReading">Loading today's reading…</p></div>
+                        <button class="btn btn-sm btn-primary" id="bibleReadButton" onclick="completeDailyPractice('bible')">Mark as read</button>
+                    </article>
+                    <article class="devotional-card">
+                        <span class="devotional-icon">&#128591;</span>
+                        <div><h4>Prayer Check-in</h4><p>Take a few quiet minutes to pray, give thanks, and ask for guidance.</p></div>
+                        <button class="btn btn-sm btn-primary" id="prayerButton" onclick="completeDailyPractice('prayer')">I prayed today</button>
+                    </article>
+                </div>
+            </section>
+
+            <section class="dashboard-section">
+                <h3>My Programs</h3>
+                <div class="program-list" id="studentPrograms">
+                    <div class="program-item">
+                        <div class="program-info">
+                            <span class="program-icon">&#9962;</span>
+                            <div>
+                                <h4>CTFS</h4>
+                                <p>Christian Teenage Fellowship</p>
+                            </div>
+                        </div>
+                        <span class="program-status active">Active</span>
+                    </div>
+                    <div class="program-item">
+                        <div class="program-info">
+                            <span class="program-icon">&#127925;</span>
+                            <div>
+                                <h4>TCVLMDP</h4>
+                                <p>Voice, Leadership & Mentorship</p>
+                            </div>
+                        </div>
+                        <span class="program-status enrolled">Enrolled</span>
+                    </div>
+                </div>
+            </section>
+
+            <section class="dashboard-section">
+                <h3>Pending Assignments</h3>
+                <div class="assignment-list" id="pendingAssignments">
+                    <div class="assignment-item">
+                        <div>
+                            <h4>Loading assignments...</h4>
+                            <p>Please wait</p>
+                        </div>
+                    </div>
+                </div>
+            </section>
+
+            <section class="dashboard-section">
+                <div class="section-heading"><h3>Activity Feed</h3><button class="btn btn-sm btn-outline" id="activityToggle" onclick="toggleDashboardList('activityFeed', this)" hidden>Show more</button></div>
+                <div class="activity-feed" id="activityFeed">
+                    <div class="activity-item">
+                        <div class="activity-header">
+                            <span class="activity-avatar">&#128226;</span>
+                            <div>
+                                <strong>Welcome to NextGenTeens!</strong>
+                                <span class="activity-time">Just now</span>
+                            </div>
+                        </div>
+                        <p class="activity-content">Start your growth journey today. Explore programs, complete assignments, and track your progress.</p>
+                    </div>
+                </div>
+            </section>
+        </div>
+    </main>
+
+    <div class="modal-overlay hidden" id="modalOverlay">
+        <div class="modal" id="modalContent">
+            <button class="modal-close" onclick="closeModal()">&#10005;</button>
+            <div id="modalBody"></div>
+        </div>
+    </div>
+
+    <script src="script.js"></script>
+</body>
+</html>

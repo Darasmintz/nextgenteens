@@ -1,0 +1,36 @@
+{
+  "version": 2,
+  "builds": [
+    { "src": "chat.js", "use": "@vercel/node" },
+    { "src": "*.html", "use": "@vercel/static" },
+    { "src": "*.css", "use": "@vercel/static" },
+    { "src": "*.js", "use": "@vercel/static" },
+    { "src": "*.png", "use": "@vercel/static" },
+    { "src": "*.ico", "use": "@vercel/static" }
+  ],
+  "routes": [
+    { "src": "/chat", "dest": "/chat.js" },
+    { "src": "/", "dest": "/index.html" },
+    { "src": "/home", "dest": "/index.html" },
+    { "src": "/login", "dest": "/login.html" },
+    { "src": "/register", "dest": "/register.html" },
+    { "src": "/student-dashboard", "dest": "/student-dashboard.html" },
+    { "src": "/mentor-dashboard", "dest": "/mentor-dashboard.html" },
+    { "src": "/admin-dashboard", "dest": "/admin-dashboard.html" },
+    { "src": "/tasks", "dest": "/tasks.html" },
+    { "src": "/achievements", "dest": "/achievements.html" },
+    { "src": "/leaderboard", "dest": "/leaderboard.html" },
+    { "src": "/profile", "dest": "/profile.html" },
+    { "src": "/settings", "dest": "/settings.html" },
+    { "src": "/activity-feed", "dest": "/activity-feed.html" },
+    { "src": "/programs", "dest": "/programs.html" },
+    { "src": "/ctfs", "dest": "/ctfs.html" },
+    { "src": "/choir", "dest": "/choir.html" },
+    { "src": "/ai-coach", "dest": "/ai-coach.html" },
+    { "src": "/games", "dest": "/games.html" },
+    { "src": "/lesson", "dest": "/lesson.html" },
+    { "src": "/notifications", "dest": "/notifications.html" },
+    { "src": "/session-manager", "dest": "/session-manager.html" },
+    { "src": "/(.*)", "dest": "/404.html" }
+  ]
+}

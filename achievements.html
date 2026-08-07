@@ -1,0 +1,146 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Achievements - NextGenTeens</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com" />
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800;900&display=swap" rel="stylesheet" />
+    <link rel="stylesheet" href="style.css" />
+    <link rel="icon" href="logo.png" />
+    <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2/dist/umd/supabase.min.js"></script>
+</head>
+<body class="dashboard-page">
+    <!-- Page Loader -->
+    <div class="page-loader" id="pageLoader">
+        <div class="loader-spinner"></div>
+        <div class="loader-text">Loading...</div>
+    </div>
+    <aside class="sidebar" id="sidebar">
+        <div class="sidebar-header">
+            <img src="logo.png" alt="NextGenTeens" class="sidebar-logo" />
+            <span class="sidebar-brand">NextGenTeens</span>
+            <button class="sidebar-close" onclick="toggleSidebar()">&#10005;</button>
+        </div>
+                        <nav class="sidebar-nav">
+            <a href="student-dashboard.html" class="nav-item "><span class="nav-icon">&#128202;</span> Dashboard</a>
+            <a href="programs.html" class="nav-item "><span class="nav-icon">&#128218;</span> Programs</a>
+            <a href="ctfs.html" class="nav-item "><span class="nav-icon">&#9962;</span> CTFS</a>
+            <a href="choir.html" class="nav-item "><span class="nav-icon">&#127925;</span> Choir</a>
+            <a href="lesson.html" class="nav-item "><span class="nav-icon">&#128214;</span> Lessons</a>
+            <a href="tasks.html" class="nav-item "><span class="nav-icon">&#128221;</span> Tasks</a>
+            <a href="activity-feed.html" class="nav-item "><span class="nav-icon">&#128226;</span> Activity Feed</a>
+            <a href="leaderboard.html" class="nav-item "><span class="nav-icon">&#128200;</span> Leaderboard</a>
+            <a href="games.html" class="nav-item "><span class="nav-icon">&#127918;</span> Learning Lab</a>
+            <a href="ai-coach.html" class="nav-item "><span class="nav-icon">&#129302;</span> AI Coach</a>
+            <a href="notifications.html" class="nav-item "><span class="nav-icon">&#128276;</span> Notifications</a>
+            <a href="profile.html" class="nav-item "><span class="nav-icon">&#128100;</span> Profile</a>
+            <a href="achievements.html" class="nav-item active"><span class="nav-icon">&#127942;</span> Achievements</a>
+            <a href="settings.html" class="nav-item "><span class="nav-icon">&#9881;</span> Settings</a>
+            <a href="index.html" class="nav-item logout" onclick="handleLogout()"><span class="nav-icon">&#128682;</span> Logout</a>
+        </nav>
+    </aside>
+
+    <main class="dashboard-main">
+        <header class="topbar">
+            <button class="menu-toggle" onclick="toggleSidebar()">&#9776;</button>
+            <h1 class="topbar-title">&#127942; Achievements</h1>
+            <div class="topbar-user">
+                <span id="userNameDisplay">Student</span>
+                <a href="profile.html" class="user-avatar-link">
+                    <img class="user-avatar-img" id="userAvatarImg" src="" style="display:none;" alt="Profile" />
+                    <span class="user-avatar" id="userAvatar">&#129489;&#8205;&#127891;</span>
+                </a>
+            </div>
+        </header>
+
+        <div class="dashboard-content">
+            <section class="welcome-section">
+                <div class="welcome-text">
+                    <h2>Your Achievements</h2>
+                    <p>Every achievement represents growth, consistency, and excellence.</p>
+                </div>
+                <div class="welcome-stats">
+                    <div class="stat-card">
+                        <span class="stat-value" id="totalAchievements">0</span>
+                        <span class="stat-label">Earned</span>
+                    </div>
+                    <div class="stat-card">
+                        <span class="stat-value" id="totalAvailable">0</span>
+                        <span class="stat-label">Available</span>
+                    </div>
+                </div>
+            </section>
+
+            <section class="dashboard-section">
+                <h3>&#127941; Earned Achievements</h3>
+                <div id="earnedAchievements" style="display: grid; grid-template-columns: repeat(auto-fill, minmax(150px, 1fr)); gap: 1rem;">
+                    <div style="text-align: center; padding: 1.5rem; background: var(--background); border-radius: var(--radius-md);">
+                        <div style="font-size: 3rem;">&#127942;</div>
+                        <h4 style="font-size: 0.875rem;">Loading...</h4>
+                    </div>
+                </div>
+            </section>
+
+            <section class="dashboard-section">
+                <h3>&#128274; Locked Achievements</h3>
+                <div id="lockedAchievements" style="display: grid; grid-template-columns: repeat(auto-fill, minmax(150px, 1fr)); gap: 1rem; opacity: 0.6;">
+                    <div style="text-align: center; padding: 1.5rem; background: var(--background); border-radius: var(--radius-md);">
+                        <div style="font-size: 3rem;">&#128274;</div>
+                        <h4 style="font-size: 0.875rem;">Loading...</h4>
+                    </div>
+                </div>
+            </section>
+
+            <section class="dashboard-section">
+                <h3>&#128202; Achievement Categories</h3>
+                <div style="display: grid; grid-template-columns: repeat(auto-fill, minmax(200px, 1fr)); gap: 1rem;">
+                    <div style="padding: 1rem; background: var(--background); border-radius: var(--radius-md); text-align: center;">
+                        <div style="font-size: 2rem;">&#9989;</div>
+                        <h4>Attendance</h4>
+                        <p id="catAttendance" style="font-size: 0.875rem; color: var(--text-muted);">0 earned</p>
+                    </div>
+                    <div style="padding: 1rem; background: var(--background); border-radius: var(--radius-md); text-align: center;">
+                        <div style="font-size: 2rem;">&#128293;</div>
+                        <h4>Consistency</h4>
+                        <p id="catConsistency" style="font-size: 0.875rem; color: var(--text-muted);">0 earned</p>
+                    </div>
+                    <div style="padding: 1rem; background: var(--background); border-radius: var(--radius-md); text-align: center;">
+                        <div style="font-size: 2rem;">&#128084;</div>
+                        <h4>Leadership</h4>
+                        <p id="catLeadership" style="font-size: 0.875rem; color: var(--text-muted);">0 earned</p>
+                    </div>
+                    <div style="padding: 1rem; background: var(--background); border-radius: var(--radius-md); text-align: center;">
+                        <div style="font-size: 2rem;">&#127925;</div>
+                        <h4>Voice</h4>
+                        <p id="catVoice" style="font-size: 0.875rem; color: var(--text-muted);">0 earned</p>
+                    </div>
+                    <div style="padding: 1rem; background: var(--background); border-radius: var(--radius-md); text-align: center;">
+                        <div style="font-size: 2rem;">&#129309;</div>
+                        <h4>Mentorship</h4>
+                        <p id="catMentorship" style="font-size: 0.875rem; color: var(--text-muted);">0 earned</p>
+                    </div>
+                    <div style="padding: 1rem; background: var(--background); border-radius: var(--radius-md); text-align: center;">
+                        <div style="font-size: 2rem;">&#128591;</div>
+                        <h4>Spiritual</h4>
+                        <p id="catSpiritual" style="font-size: 0.875rem; color: var(--text-muted);">0 earned</p>
+                    </div>
+                    <div style="padding: 1rem; background: var(--background); border-radius: var(--radius-md); text-align: center;">
+                        <div style="font-size: 2rem;">&#127891;</div>
+                        <h4>Graduate</h4>
+                        <p id="catGraduate" style="font-size: 0.875rem; color: var(--text-muted);">0 earned</p>
+                    </div>
+                </div>
+            </section>
+        </div>
+    </main>
+
+    <script src="script.js"></script>
+    <script>
+        document.addEventListener('DOMContentLoaded', function() {
+            initPage(typeof loadAchievementsPage !== 'undefined' ? loadAchievementsPage : null);
+        });
+    </script>
+</body>
+</html>

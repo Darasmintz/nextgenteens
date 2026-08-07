@@ -1,0 +1,247 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Learning Lab - NextGenTeens</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com" />
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800;900&display=swap" rel="stylesheet" />
+    <link rel="stylesheet" href="style.css" />
+    <link rel="icon" href="logo.png" />
+    <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2/dist/umd/supabase.min.js"></script>
+    <style>
+        .games-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(260px, 1fr)); gap: 1.25rem; }
+        .game-card { background: var(--card); border: 1px solid var(--border); border-radius: var(--radius-lg); padding: 1.5rem; text-align: center; cursor: pointer; transition: all var(--transition); }
+        .game-card:hover { transform: translateY(-4px); box-shadow: var(--card-shadow-hover); border-color: var(--primary-light); }
+        .game-icon { font-size: 3rem; margin-bottom: 0.75rem; display: block; }
+        .game-title { font-size: 1.1rem; font-weight: 700; margin-bottom: 0.5rem; }
+        .game-desc { font-size: 0.8rem; color: var(--text-light); margin-bottom: 1rem; }
+        .game-badge { display: inline-block; padding: 0.2rem 0.75rem; border-radius: var(--radius-full); font-size: 0.625rem; font-weight: 600; background: var(--border-light); color: var(--text); margin-bottom: 1rem; }
+        /* Game screens */
+        .game-screen { display: none; }
+        .game-screen.active { display: block; }
+        .game-question { background: var(--background); padding: 1.5rem; border-radius: var(--radius-lg); margin-bottom: 1rem; }
+        .game-options { display: grid; gap: 0.75rem; margin-bottom: 1rem; }
+        .game-option { padding: 0.875rem 1.25rem; border: 2px solid var(--border); border-radius: var(--radius-md); background: var(--card); cursor: pointer; font-weight: 500; transition: all var(--transition); text-align: left; }
+        .game-option:hover { border-color: var(--primary); background: rgba(37,99,235,0.05); }
+        .game-option.correct { border-color: var(--success); background: #ECFDF5; color: var(--success); }
+        .game-option.wrong { border-color: var(--danger); background: #FEF2F2; color: var(--danger); }
+        .game-score { font-size: 1.5rem; font-weight: 700; color: var(--primary); }
+        .drag-item { padding: 0.5rem 1rem; background: var(--primary); color: white; border-radius: var(--radius-md); cursor: grab; user-select: none; font-size: 0.875rem; font-weight: 500; margin: 0.25rem; display: inline-block; }
+        .drag-item:active { cursor: grabbing; opacity: 0.7; }
+        .drop-zone { min-height: 48px; border: 2px dashed var(--border); border-radius: var(--radius-md); padding: 0.5rem; display: flex; flex-wrap: wrap; gap: 0.25rem; align-items: center; margin-bottom: 0.5rem; }
+        .drop-zone.over { border-color: var(--primary); background: rgba(37,99,235,0.05); }
+        .memory-grid { display: grid; grid-template-columns: repeat(4, 1fr); gap: 0.5rem; max-width: 400px; margin: 0 auto; }
+        .memory-card { aspect-ratio: 1; background: var(--secondary); border-radius: var(--radius-md); cursor: pointer; display: flex; align-items: center; justify-content: center; font-size: 1.5rem; transition: all 0.3s; border: 2px solid transparent; }
+        .memory-card.flipped { background: var(--card); border-color: var(--primary); }
+        .memory-card.matched { background: #ECFDF5; border-color: var(--success); cursor: default; }
+        .progress-bar { height: 8px; background: var(--border); border-radius: 4px; overflow: hidden; margin-bottom: 1rem; }
+        .progress-fill { height: 100%; background: var(--primary-gradient); border-radius: 4px; transition: width 0.4s; }
+        .result-card { text-align: center; padding: 2rem; background: var(--background); border-radius: var(--radius-lg); }
+        .result-emoji { font-size: 4rem; display: block; margin-bottom: 1rem; }
+    </style>
+</head>
+<body class="dashboard-page">
+    <!-- Page Loader -->
+    <div class="page-loader" id="pageLoader">
+        <div class="loader-spinner"></div>
+        <div class="loader-text">Loading...</div>
+    </div>
+    <aside class="sidebar" id="sidebar">
+        <div class="sidebar-header">
+            <img src="logo.png" alt="NextGenTeens" class="sidebar-logo" />
+            <span class="sidebar-brand">NextGenTeens</span>
+            <button class="sidebar-close" onclick="toggleSidebar()">&#10005;</button>
+        </div>
+                        <nav class="sidebar-nav">
+            <a href="student-dashboard.html" class="nav-item "><span class="nav-icon">&#128202;</span> Dashboard</a>
+            <a href="programs.html" class="nav-item "><span class="nav-icon">&#128218;</span> Programs</a>
+            <a href="ctfs.html" class="nav-item "><span class="nav-icon">&#9962;</span> CTFS</a>
+            <a href="choir.html" class="nav-item "><span class="nav-icon">&#127925;</span> Choir</a>
+            <a href="lesson.html" class="nav-item "><span class="nav-icon">&#128214;</span> Lessons</a>
+            <a href="tasks.html" class="nav-item "><span class="nav-icon">&#128221;</span> Tasks</a>
+            <a href="activity-feed.html" class="nav-item "><span class="nav-icon">&#128226;</span> Activity Feed</a>
+            <a href="leaderboard.html" class="nav-item "><span class="nav-icon">&#128200;</span> Leaderboard</a>
+            <a href="games.html" class="nav-item active"><span class="nav-icon">&#127918;</span> Learning Lab</a>
+            <a href="ai-coach.html" class="nav-item "><span class="nav-icon">&#129302;</span> AI Coach</a>
+            <a href="notifications.html" class="nav-item "><span class="nav-icon">&#128276;</span> Notifications</a>
+            <a href="profile.html" class="nav-item "><span class="nav-icon">&#128100;</span> Profile</a>
+            <a href="achievements.html" class="nav-item "><span class="nav-icon">&#127942;</span> Achievements</a>
+            <a href="settings.html" class="nav-item "><span class="nav-icon">&#9881;</span> Settings</a>
+            <a href="index.html" class="nav-item logout" onclick="handleLogout()"><span class="nav-icon">&#128682;</span> Logout</a>
+        </nav>
+    </aside>
+
+    <main class="dashboard-main">
+        <header class="topbar">
+            <button class="menu-toggle" onclick="toggleSidebar()">&#9776;</button>
+            <h1 class="topbar-title">&#127918; Interactive Learning Lab</h1>
+            <div class="topbar-user">
+                <span id="userNameDisplay">Student</span>
+                <a href="profile.html" class="user-avatar-link">
+                    <img class="user-avatar-img" id="userAvatarImg" src="" style="display:none;" alt="Profile" />
+                    <span class="user-avatar" id="userAvatar">&#129489;&#8205;&#127891;</span>
+                </a>
+            </div>
+        </header>
+
+        <div class="dashboard-content">
+            <!-- Welcome & Stats -->
+            <section class="welcome-section">
+                <div class="welcome-text">
+                    <h2>Learning Lab</h2>
+                    <p>Reinforce your growth through interactive games and challenges.</p>
+                </div>
+                <div class="welcome-stats">
+                    <div class="stat-card">
+                        <span class="stat-value" id="gamesPlayed">0</span>
+                        <span class="stat-label">Played</span>
+                    </div>
+                    <div class="stat-card">
+                        <span class="stat-value" id="gamesXP">0</span>
+                        <span class="stat-label">XP Earned</span>
+                    </div>
+                </div>
+            </section>
+
+            <!-- Game Selection -->
+            <div id="gameSelection">
+                <section class="dashboard-section">
+                    <h3>&#127919; Choose a Game</h3>
+                    <div class="games-grid">
+                        <div class="game-card" onclick="startGame('faithQuiz')">
+                            <span class="game-icon">&#128591;</span>
+                            <div class="game-title">Faith Quiz Arena</div>
+                            <div class="game-badge">Multiple Choice</div>
+                            <div class="game-desc">Test your biblical knowledge through challenging questions about faith, scripture, and Christian living.</div>
+                            <button class="btn btn-primary btn-sm">Play Now</button>
+                        </div>
+                        <div class="game-card" onclick="startGame('leadershipSim')">
+                            <span class="game-icon">&#128084;</span>
+                            <div class="game-title">Leadership Simulator</div>
+                            <div class="game-badge">Scenario-Based</div>
+                            <div class="game-desc">Make leadership decisions in real-life scenarios and discover your leadership style and potential.</div>
+                            <button class="btn btn-primary btn-sm">Play Now</button>
+                        </div>
+                        <div class="game-card" onclick="startGame('memoryVerse')">
+                            <span class="game-icon">&#128214;</span>
+                            <div class="game-title">Memory Verse Puzzle</div>
+                            <div class="game-badge">Matching</div>
+                            <div class="game-desc">Match memory verse pairs to reinforce scripture knowledge and earn achievement points.</div>
+                            <button class="btn btn-primary btn-sm">Play Now</button>
+                        </div>
+                        <div class="game-card" onclick="startGame('wordPlacement')">
+                            <span class="game-icon">&#128221;</span>
+                            <div class="game-title">Word Placement Challenge</div>
+                            <div class="game-badge">Drag & Drop</div>
+                            <div class="game-desc">Categorise leadership and faith words into the correct boxes to reinforce key concepts.</div>
+                            <button class="btn btn-primary btn-sm">Play Now</button>
+                        </div>
+                        <div class="game-card" onclick="startGame('communication')">
+                            <span class="game-icon">&#128172;</span>
+                            <div class="game-title">Communication Challenge</div>
+                            <div class="game-badge">Scenario-Based</div>
+                            <div class="game-desc">Choose the best responses in conversation scenarios to build your communication skills.</div>
+                            <button class="btn btn-primary btn-sm">Play Now</button>
+                        </div>
+                        <div class="game-card" onclick="startGame('rhythmTrainer')">
+                            <span class="game-icon">&#127925;</span>
+                            <div class="game-title">Choir Rhythm Trainer</div>
+                            <div class="game-badge">Timing</div>
+                            <div class="game-desc">Practice your choir timing and rhythm by tapping to the beat of worship songs in sequence.</div>
+                            <button class="btn btn-primary btn-sm">Play Now</button>
+                        </div>
+                    </div>
+                </section>
+            </div>
+
+            <!-- Active Game Area -->
+            <div id="activeGame" style="display:none;">
+                <div class="dashboard-section">
+                    <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:1rem;">
+                        <h3 id="activeGameTitle">Game</h3>
+                        <button class="btn btn-outline btn-sm" onclick="exitGame()">&#10005; Exit</button>
+                    </div>
+                    <div class="progress-bar"><div class="progress-fill" id="gameProgress" style="width:0%"></div></div>
+                    <div style="display:flex; justify-content:space-between; font-size:0.875rem; color:var(--text-muted); margin-bottom:1.5rem;">
+                        <span id="questionCounter">Question 1 of 10</span>
+                        <span>Score: <strong id="currentScore">0</strong></span>
+                    </div>
+
+                    <!-- Faith Quiz -->
+                    <div id="faithQuizGame" class="game-screen">
+                        <div class="game-question" id="fqQuestion"></div>
+                        <div class="game-options" id="fqOptions"></div>
+                    </div>
+
+                    <!-- Leadership Simulator -->
+                    <div id="leadershipSimGame" class="game-screen">
+                        <div class="game-question" id="lsQuestion"></div>
+                        <div class="game-options" id="lsOptions"></div>
+                    </div>
+
+                    <!-- Memory Verse -->
+                    <div id="memoryVerseGame" class="game-screen">
+                        <p style="text-align:center; color:var(--text-muted); font-size:0.875rem; margin-bottom:1rem;">Match each verse beginning with its ending. Click two cards to match them!</p>
+                        <div class="memory-grid" id="memoryGrid"></div>
+                    </div>
+
+                    <!-- Word Placement -->
+                    <div id="wordPlacementGame" class="game-screen">
+                        <p style="text-align:center; color:var(--text-muted); font-size:0.875rem; margin-bottom:1rem;">Drag each word into the correct category box.</p>
+                        <div id="wordBank" style="background:var(--background); padding:1rem; border-radius:var(--radius-md); margin-bottom:1rem; min-height:60px;"></div>
+                        <div id="dropZones" style="display:grid; grid-template-columns:1fr 1fr; gap:1rem;"></div>
+                        <button class="btn btn-primary" style="margin-top:1rem;" onclick="checkWordPlacement()">Check Answers</button>
+                    </div>
+
+                    <!-- Communication -->
+                    <div id="communicationGame" class="game-screen">
+                        <div class="game-question" id="comQuestion"></div>
+                        <div class="game-options" id="comOptions"></div>
+                    </div>
+
+                    <!-- Rhythm Trainer -->
+                    <div id="rhythmTrainerGame" class="game-screen">
+                        <div style="text-align:center;">
+                            <div id="rhythmDisplay" style="font-size:3rem; margin:2rem 0; min-height:80px; display:flex; align-items:center; justify-content:center;"></div>
+                            <p id="rhythmInstruction" style="color:var(--text-muted); margin-bottom:1.5rem;">Watch the pattern, then tap the button in rhythm!</p>
+                            <button id="rhythmBtn" class="btn btn-primary btn-large" onclick="tapRhythm()" style="padding:1.5rem 3rem; font-size:1.25rem;">&#129345; TAP</button>
+                            <div id="rhythmFeedback" style="margin-top:1rem; font-size:1rem; font-weight:600; min-height:32px;"></div>
+                        </div>
+                    </div>
+
+                    <!-- Result Screen -->
+                    <div id="gameResult" class="game-screen">
+                        <div class="result-card">
+                            <span class="result-emoji" id="resultEmoji">&#127881;</span>
+                            <h2 id="resultTitle">Great Job!</h2>
+                            <div class="game-score" id="finalScore">8/10</div>
+                            <p id="resultMessage" style="color:var(--text-light); margin:1rem 0;"></p>
+                            <div style="display:flex; gap:1rem; justify-content:center; flex-wrap:wrap; margin-top:1.5rem;">
+                                <button class="btn btn-primary" onclick="playAgain()">Play Again</button>
+                                <button class="btn btn-outline" onclick="exitGame()">Choose Another</button>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </main>
+
+    <div class="modal-overlay hidden" id="modalOverlay">
+        <div class="modal" id="modalContent">
+            <button class="modal-close" onclick="closeModal()">&#10005;</button>
+            <div id="modalBody"></div>
+        </div>
+    </div>
+
+    <script src="script.js"></script>
+    <script src="games.js"></script>
+    <script>
+        document.addEventListener('DOMContentLoaded', function() {
+            initPage(typeof loadGamesPage !== 'undefined' ? loadGamesPage : null);
+        });
+    </script>
+</body>
+</html>

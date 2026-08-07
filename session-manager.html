@@ -1,0 +1,517 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Session Manager - NextGenTeens</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com" />
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800;900&display=swap" rel="stylesheet" />
+    <link rel="stylesheet" href="style.css" />
+    <link rel="icon" href="logo.png" />
+    <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2/dist/umd/supabase.min.js"></script>
+</head>
+<body class="dashboard-page">
+    <!-- Page Loader -->
+    <div class="page-loader" id="pageLoader">
+        <div class="loader-spinner"></div>
+        <div class="loader-text">Loading...</div>
+    </div>
+    <aside class="sidebar" id="sidebar">
+        <div class="sidebar-header">
+            <img src="logo.png" alt="NextGenTeens" class="sidebar-logo" />
+            <span class="sidebar-brand">NextGenTeens</span>
+            <button class="sidebar-close" onclick="toggleSidebar()">&#10005;</button>
+        </div>
+                        <nav class="sidebar-nav">
+            <a href="mentor-dashboard.html" class="nav-item "><span class="nav-icon">&#128202;</span> Dashboard</a>
+            <a href="#" class="nav-item" onclick="loadMentorSection('students')"><span class="nav-icon">&#128101;</span> Students</a>
+            <a href="#" class="nav-item" onclick="loadMentorSection('attendance')"><span class="nav-icon">&#10003;</span> Attendance</a>
+            <a href="#" class="nav-item" onclick="loadMentorSection('assignments')"><span class="nav-icon">&#128221;</span> Reviews</a>
+            <a href="#" class="nav-item" onclick="loadMentorSection('activities')"><span class="nav-icon">&#128226;</span> Publish</a>
+            <a href="session-manager.html" class="nav-item active"><span class="nav-icon">&#127909;</span> Sessions</a>
+            <a href="activity-feed.html" class="nav-item "><span class="nav-icon">&#128240;</span> Activity Feed</a>
+            <a href="#" class="nav-item" onclick="loadMentorSection('reports')"><span class="nav-icon">&#128200;</span> Reports</a>
+            <a href="notifications.html" class="nav-item "><span class="nav-icon">&#128276;</span> Notifications</a>
+            <a href="settings.html" class="nav-item "><span class="nav-icon">&#9881;</span> Settings</a>
+            <a href="index.html" class="nav-item logout" onclick="handleLogout()"><span class="nav-icon">&#128682;</span> Logout</a>
+        </nav>
+    </aside>
+
+    <main class="dashboard-main">
+        <header class="topbar">
+            <button class="menu-toggle" onclick="toggleSidebar()">&#9776;</button>
+            <h1 class="topbar-title">&#127916; Session Manager</h1>
+            <div class="topbar-user">
+                <span id="userNameDisplay">Mentor</span>
+                <a href="profile.html" class="user-avatar-link">
+                    <img class="user-avatar-img" id="userAvatarImg" src="" style="display:none;" alt="Profile" />
+                    <span class="user-avatar" id="userAvatar">&#128104;&#8205;&#127979;</span>
+                </a>
+            </div>
+        </header>
+
+        <div class="dashboard-content">
+            <section class="welcome-section">
+                <div class="welcome-text">
+                    <h2>Manage Sessions</h2>
+                    <p>Add YouTube video IDs, descriptions, and assignments to each session.</p>
+                </div>
+                <div style="display:flex;gap:0.75rem;flex-wrap:wrap;">
+                    <button class="btn btn-primary" onclick="showCreateSessionModal()">+ New Session</button>
+                    <button class="btn btn-outline" onclick="showCreateAssignmentModal()">+ New Assignment</button>
+                </div>
+            </section>
+
+            <!-- Program Filter -->
+            <div class="dashboard-section" style="padding:1rem;">
+                <div style="display:flex;gap:0.75rem;align-items:center;flex-wrap:wrap;">
+                    <label style="font-weight:600;font-size:0.875rem;">Program:</label>
+                    <select id="programFilter" onchange="loadSessionsForProgram()" style="padding:0.5rem 1rem;border:2px solid var(--border);border-radius:var(--radius-md);font-family:var(--font);">
+                        <option value="">Loading programs...</option>
+                    </select>
+                </div>
+            </div>
+
+            <!-- Sessions Table -->
+            <div class="dashboard-section">
+                <h3 style="margin-bottom:1rem;">Sessions</h3>
+                <div class="table-container">
+                    <table class="data-table">
+                        <thead>
+                            <tr>
+                                <th>Week</th>
+                                <th>Title</th>
+                                <th>Video</th>
+                                <th>Assignments</th>
+                                <th>Actions</th>
+                            </tr>
+                        </thead>
+                        <tbody id="sessionsTableBody">
+                            <tr><td colspan="5" style="text-align:center;padding:2rem;color:var(--text-muted);">Select a program above to see sessions.</td></tr>
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+        </div>
+    </main>
+
+    <div class="modal-overlay hidden" id="modalOverlay">
+        <div class="modal" id="modalContent">
+            <button class="modal-close" onclick="closeModal()">&#10005;</button>
+            <div id="modalBody"></div>
+        </div>
+    </div>
+
+    <script src="script.js"></script>
+    <script>
+    let programs = [];
+    let sessionAssignmentCounts = {};
+
+    document.addEventListener('DOMContentLoaded', async () => {
+        const client = await getSupabase();
+        if (!client) return;
+        const { data: { session } } = await client.auth.getSession();
+        if (!session) { window.location.href = 'login.html'; return; }
+
+        // Only mentors and admins
+        const { data: profile } = await client.from('profiles').select('role, full_name').eq('id', session.user.id).single();
+        if (!profile || !['mentor','admin'].includes(profile.role)) {
+            window.location.href = 'login.html'; return;
+        }
+        const el = document.getElementById('userNameDisplay');
+        if (el) el.textContent = profile.full_name || 'Mentor';
+
+        // Load programs - prioritize CTFS
+        const { data: progs } = await client.from('programs').select('id, name, slug').eq('is_active', true).order('slug', { ascending: false });
+        programs = (progs || []).sort((a, b) => {
+            if (a.slug === 'ctfs') return -1;
+            if (b.slug === 'ctfs') return 1;
+            return (a.name || '').localeCompare(b.name || '');
+        });
+        const sel = document.getElementById('programFilter');
+        if (programs.length) {
+            sel.innerHTML = programs.map(p => `<option value="${p.id}">${p.name}</option>`).join('');
+            // Auto-load first program (CTFS if available)
+            if (sel.value) {
+                await loadSessionsForProgram();
+            }
+        } else {
+            sel.innerHTML = '<option value="">No active programs found. Please create a program first.</option>';
+        }
+    });
+
+    function extractYouTubeId(urlOrId) {
+        if (!urlOrId) return '';
+        let str = String(urlOrId).trim();
+        // Handle raw ID with query string like "HlDYalbyHu4?si=..."
+        if (str.includes('?')) {
+            const firstPart = str.split('?')[0];
+            if (/^[\w-]{11}$/.test(firstPart)) return firstPart;
+        }
+        if (/^[\w-]{11}$/.test(str)) return str;
+        const match = str.match(/(?:youtu\.be\/|youtube(?:-nocookie)?\.com\/(?:embed\/|v\/|shorts\/|watch\?.*v=))([\w-]{11})/i);
+        if (match && match[1]) return match[1];
+        const fallback = str.match(/[\w-]{11}/);
+        if (fallback && fallback[0]) return fallback[0];
+        return str;
+    }
+
+    async function loadSessionsForProgram() {
+        const programId = document.getElementById('programFilter').value;
+        if (!programId) return;
+
+        const client = await getSupabase();
+        if (!client) return;
+
+        const selectedProg = programs.find(p => p.id === programId);
+        const programSlug = selectedProg?.slug || 'ctfs';
+
+        const { data: sessions } = await client.from('sessions')
+            .select('*').eq('program_id', programId).order('week_number', { ascending: true });
+
+        const tbody = document.getElementById('sessionsTableBody');
+        if (!sessions || !sessions.length) {
+            tbody.innerHTML = '<tr><td colspan="5" style="text-align:center;padding:2rem;color:var(--text-muted);">No sessions yet. Create your first session above.</td></tr>';
+            return;
+        }
+
+        // Get assignment counts for each session
+        const { data: allAssign } = await client.from('tasks').select('id, session_id');
+        const countMap = {};
+        (allAssign || []).forEach(a => {
+            countMap[a.session_id] = (countMap[a.session_id] || 0) + 1;
+        });
+
+        tbody.innerHTML = sessions.map(s => `
+            <tr>
+                <td style="font-weight:600;">Wk ${s.week_number || '-'}</td>
+                <td>${s.title || 'Untitled'}</td>
+                <td>
+                    ${s.video_url
+                        ? `<span class="badge success">&#9989; Added</span>`
+                        : `<span class="badge warning">&#9888;&#65039; No video</span>`}
+                </td>
+                <td><span class="badge info">${countMap[s.id] || 0} task${(countMap[s.id] || 0) !== 1 ? 's' : ''}</span></td>
+                <td>
+                    <div style="display:flex;gap:0.4rem;flex-wrap:wrap;">
+                        <a href="lesson.html?session=${s.id}&program=${programSlug}" target="_blank" class="btn btn-sm btn-outline">&#128065; View Lesson</a>
+                        <button class="btn btn-sm btn-primary" onclick="editSession('${s.id}', '${escAttr(s.title)}', '${escAttr(s.video_url || '')}', '${escAttr(s.description || '')}')">Edit</button>
+                        <button class="btn btn-sm btn-outline" onclick="addVideoToSession('${s.id}', '${escAttr(s.title)}')">&#127916; Video</button>
+                        <button class="btn btn-sm btn-outline" onclick="createAssignmentForSession('${s.id}', '${escAttr(s.title)}')">+ Task</button>
+                    </div>
+                </td>
+            </tr>`).join('');
+    }
+
+    function escAttr(str) {
+        return (str || '').replace(/'/g, '&#39;').replace(/"/g, '&quot;');
+    }
+
+    function addVideoToSession(sessionId, sessionTitle) {
+        openModal(`
+            <h2 style="margin-bottom:0.5rem;">&#127916; Add Video</h2>
+            <p style="color:var(--text-light);margin-bottom:1.25rem;font-size:0.875rem;">Session: <strong>${sessionTitle}</strong></p>
+            <div class="form-group">
+                <label>YouTube Video URL or ID</label>
+                <input type="text" id="videoIdInput" placeholder="e.g. https://www.youtube.com/watch?v=... or ID"
+                    style="width:100%;padding:0.75rem 1rem;border:2px solid var(--border);border-radius:var(--radius-md);">
+                <p style="font-size:0.75rem;color:var(--text-muted);margin-top:0.25rem;">
+                    Paste full YouTube URL, Shorts URL, or Video ID
+                </p>
+            </div>
+            <div id="videoPreview" style="margin:0.75rem 0;"></div>
+            <div style="display:flex;gap:0.5rem;margin-top:1rem;">
+                <button class="btn btn-outline btn-sm" onclick="previewYTVideo()">Preview</button>
+                <button class="btn btn-primary" onclick="saveVideoId('${sessionId}')">Save Video</button>
+            </div>
+        `);
+    }
+
+    function previewYTVideo() {
+        const raw = document.getElementById('videoIdInput')?.value?.trim();
+        const id = extractYouTubeId(raw);
+        if (!id) return;
+        document.getElementById('videoPreview').innerHTML = `
+            <div style="position:relative;width:100%;padding-bottom:56.25%;border-radius:var(--radius-md);overflow:hidden;">
+                <iframe src="https://www.youtube.com/embed/${id}?rel=0" style="position:absolute;top:0;left:0;width:100%;height:100%;border:none;" allowfullscreen></iframe>
+            </div>`;
+    }
+
+    async function saveVideoId(sessionId) {
+        const raw = document.getElementById('videoIdInput')?.value?.trim();
+        if (!raw) { showSystemCard('Please enter a YouTube video URL or ID.', 'error'); return; }
+        const videoId = extractYouTubeId(raw);
+
+        try {
+            const client = await getSupabase();
+            if (!client) throw new Error('Not connected');
+            const { error } = await client.from('sessions').update({ video_url: videoId }).eq('id', sessionId);
+            if (error) throw error;
+            showSystemCard('Video added successfully!', 'success');
+            closeModal();
+            loadSessionsForProgram();
+        } catch(e) {
+            showSystemCard('Error: ' + (e.message || 'Unknown error'), 'error');
+        }
+    }
+
+    function editSession(sessionId, title, videoUrl, description) {
+        const decodedTitle = title.replace(/&#39;/g, "'").replace(/&quot;/g, '"');
+        const decodedVideo = videoUrl.replace(/&#39;/g, "'").replace(/&quot;/g, '"');
+        const decodedDesc = description.replace(/&#39;/g, "'").replace(/&quot;/g, '"');
+
+        openModal(`
+            <h2 style="margin-bottom:1rem;">&#9999;&#65039; Edit Session</h2>
+            <form onsubmit="saveSession(event, '${sessionId}')">
+                <div class="form-group">
+                    <label>Session Title</label>
+                    <input type="text" id="editSessionTitle" value="${decodedTitle}"
+                        style="width:100%;padding:0.75rem 1rem;border:2px solid var(--border);border-radius:var(--radius-md);" required>
+                </div>
+                <div class="form-group">
+                    <label>Description (optional)</label>
+                    <textarea id="editSessionDesc" rows="3"
+                        style="width:100%;padding:0.75rem 1rem;border:2px solid var(--border);border-radius:var(--radius-md);font-family:var(--font);">${decodedDesc}</textarea>
+                </div>
+                <div class="form-group">
+                    <label>YouTube Video URL or ID (optional)</label>
+                    <input type="text" id="editSessionVideo" value="${decodedVideo}" placeholder="e.g. https://www.youtube.com/watch?v=... or Video ID"
+                        style="width:100%;padding:0.75rem 1rem;border:2px solid var(--border);border-radius:var(--radius-md);">
+                </div>
+                <div style="display:flex;gap:0.5rem;margin-top:1rem;">
+                    <button type="submit" class="btn btn-primary">Save Changes</button>
+                    <button type="button" class="btn btn-outline" onclick="closeModal()">Cancel</button>
+                </div>
+            </form>
+        `);
+    }
+
+    async function saveSession(event, sessionId) {
+        event.preventDefault();
+        const title = document.getElementById('editSessionTitle')?.value?.trim();
+        const desc = document.getElementById('editSessionDesc')?.value?.trim();
+        const rawVideo = document.getElementById('editSessionVideo')?.value?.trim();
+        const video = rawVideo ? extractYouTubeId(rawVideo) : '';
+
+        try {
+            const client = await getSupabase();
+            if (!client) throw new Error('Not connected');
+            const updates = { title };
+            if (desc !== undefined) updates.description = desc;
+            if (rawVideo !== undefined) updates.video_url = video || null;
+            const { error } = await client.from('sessions').update(updates).eq('id', sessionId);
+            if (error) throw error;
+            showSystemCard('Session updated!', 'success');
+            closeModal();
+            loadSessionsForProgram();
+        } catch(e) {
+            showSystemCard('Error: ' + (e.message || 'Unknown error'), 'error');
+        }
+    }
+
+    function showCreateSessionModal() {
+        const programId = document.getElementById('programFilter').value;
+        const programName = programs.find(p => p.id === programId)?.name || 'Program';
+        openModal(`
+            <h2 style="margin-bottom:1rem;">+ New Session</h2>
+            <form onsubmit="createSession(event, '${programId}')">
+                <div class="form-group">
+                    <label>Program</label>
+                    <input type="text" value="${programName}" disabled
+                        style="width:100%;padding:0.75rem 1rem;border:2px solid var(--border);border-radius:var(--radius-md);background:var(--background);">
+                </div>
+                <div class="form-group">
+                    <label>Week Number</label>
+                    <input type="number" id="newSessionWeek" min="1" max="24" placeholder="1"
+                        style="width:100%;padding:0.75rem 1rem;border:2px solid var(--border);border-radius:var(--radius-md);" required>
+                </div>
+                <div class="form-group">
+                    <label>Session Title</label>
+                    <input type="text" id="newSessionTitle" placeholder="Week 1 &#8212; Foundation"
+                        style="width:100%;padding:0.75rem 1rem;border:2px solid var(--border);border-radius:var(--radius-md);" required>
+                </div>
+                <div class="form-group">
+                    <label>Video URL or YouTube ID (optional)</label>
+                    <input type="text" id="newSessionVideo" placeholder="e.g. https://youtube.com/watch?v=... or Video ID"
+                        style="width:100%;padding:0.75rem 1rem;border:2px solid var(--border);border-radius:var(--radius-md);">
+                </div>
+                <div class="form-group">
+                    <label>Description (optional)</label>
+                    <textarea id="newSessionDesc" rows="3"
+                        style="width:100%;padding:0.75rem 1rem;border:2px solid var(--border);border-radius:var(--radius-md);font-family:var(--font);" placeholder="What this session covers..."></textarea>
+                </div>
+                <div style="display:flex;gap:0.5rem;margin-top:1rem;">
+                    <button type="submit" class="btn btn-primary">Create Session</button>
+                    <button type="button" class="btn btn-outline" onclick="closeModal()">Cancel</button>
+                </div>
+            </form>
+        `);
+    }
+
+    async function createSession(event, programId) {
+        event.preventDefault();
+        const week = parseInt(document.getElementById('newSessionWeek')?.value);
+        const title = document.getElementById('newSessionTitle')?.value?.trim();
+        const rawVideo = document.getElementById('newSessionVideo')?.value?.trim();
+        const video = rawVideo ? extractYouTubeId(rawVideo) : '';
+        const desc = document.getElementById('newSessionDesc')?.value?.trim();
+
+        if (!title) { showSystemCard('Please enter a session title.', 'error'); return; }
+
+        try {
+            const client = await getSupabase();
+            if (!client) throw new Error('Not connected');
+            const { error } = await client.from('sessions').insert({
+                program_id: programId,
+                title,
+                week_number: week || null,
+                video_url: video || null,
+                description: desc || null,
+                created_at: new Date().toISOString()
+            });
+            if (error) throw error;
+            showSystemCard('Session created!', 'success');
+            closeModal();
+            loadSessionsForProgram();
+        } catch(e) {
+            showSystemCard('Error: ' + (e.message || 'Unknown error'), 'error');
+        }
+    }
+
+    function createAssignmentForSession(sessionId, sessionTitle) {
+        const decoded = sessionTitle.replace(/&#39;/g, "'").replace(/&quot;/g, '"');
+        openModal(`
+            <h2 style="margin-bottom:0.5rem;">+ New Assignment</h2>
+            <p style="color:var(--text-light);margin-bottom:1rem;font-size:0.875rem;">For: <strong>${decoded}</strong></p>
+            <form onsubmit="createAssignment(event, '${sessionId}')">
+                <div class="form-group">
+                    <label>Assignment Title</label>
+                    <input type="text" id="assignTitle" placeholder="e.g. Week 1 Reflection"
+                        style="width:100%;padding:0.75rem 1rem;border:2px solid var(--border);border-radius:var(--radius-md);" required>
+                </div>
+                <div class="form-group">
+                    <label>Description / Instructions</label>
+                    <textarea id="assignDesc" rows="4"
+                        style="width:100%;padding:0.75rem 1rem;border:2px solid var(--border);border-radius:var(--radius-md);font-family:var(--font);" placeholder="What should students do?"></textarea>
+                </div>
+                <div class="form-group">
+                    <label>Submission Type</label>
+                    <select id="assignType" style="width:100%;padding:0.75rem 1rem;border:2px solid var(--border);border-radius:var(--radius-md);">
+                        <option value="text">&#128221; Text Response</option>
+                        <option value="video">&#127909; Video Submission</option>
+                        <option value="image">&#128247; Image Upload</option>
+                        <option value="reflection">&#128173; Reflection</option>
+                        <option value="quiz">&#129504; Quiz</option>
+                    </select>
+                </div>
+                <div style="display:flex;gap:0.5rem;margin-top:1rem;">
+                    <button type="submit" class="btn btn-primary">Create Assignment</button>
+                    <button type="button" class="btn btn-outline" onclick="closeModal()">Cancel</button>
+                </div>
+            </form>
+        `);
+    }
+
+    async function createAssignment(event, sessionId) {
+        event.preventDefault();
+        const title = document.getElementById('assignTitle')?.value?.trim();
+        const desc = document.getElementById('assignDesc')?.value?.trim();
+        const type = document.getElementById('assignType')?.value;
+
+        if (!title) { showSystemCard('Please enter an assignment title.', 'error'); return; }
+
+        try {
+            const client = await getSupabase();
+            if (!client) throw new Error('Not connected');
+            const { error } = await client.from('tasks').insert({
+                session_id: sessionId,
+                title,
+                description: desc || null,
+                created_at: new Date().toISOString()
+            });
+            if (error) throw error;
+            showSystemCard('Assignment created!', 'success');
+            closeModal();
+            loadSessionsForProgram();
+        } catch(e) {
+            showSystemCard('Error: ' + (e.message || 'Unknown error'), 'error');
+        }
+    }
+
+    function showCreateAssignmentModal() {
+        openModal(`
+            <h2 style="margin-bottom:1rem;">+ New Assignment</h2>
+            <form onsubmit="createStandaloneAssignment(event)">
+                <div class="form-group">
+                    <label>Session</label>
+                    <select id="standaloneSession" style="width:100%;padding:0.75rem 1rem;border:2px solid var(--border);border-radius:var(--radius-md);">
+                        <option value="">Loading sessions...</option>
+                    </select>
+                </div>
+                <div class="form-group">
+                    <label>Assignment Title</label>
+                    <input type="text" id="saTitle" placeholder="Assignment title"
+                        style="width:100%;padding:0.75rem 1rem;border:2px solid var(--border);border-radius:var(--radius-md);" required>
+                </div>
+                <div class="form-group">
+                    <label>Instructions</label>
+                    <textarea id="saDesc" rows="3"
+                        style="width:100%;padding:0.75rem 1rem;border:2px solid var(--border);border-radius:var(--radius-md);font-family:var(--font);" placeholder="Describe what students need to do..."></textarea>
+                </div>
+                <div class="form-group">
+                    <label>Type</label>
+                    <select id="saType" style="width:100%;padding:0.75rem 1rem;border:2px solid var(--border);border-radius:var(--radius-md);">
+                        <option value="text">&#128221; Text</option>
+                        <option value="video">&#127909; Video</option>
+                        <option value="image">&#128247; Image</option>
+                        <option value="reflection">&#128173; Reflection</option>
+                    </select>
+                </div>
+                <div style="display:flex;gap:0.5rem;margin-top:1rem;">
+                    <button type="submit" class="btn btn-primary">Create</button>
+                    <button type="button" class="btn btn-outline" onclick="closeModal()">Cancel</button>
+                </div>
+            </form>
+        `);
+        // Populate session dropdown
+        populateSessionDropdown('standaloneSession');
+    }
+
+    async function populateSessionDropdown(selectId) {
+        const client = await getSupabase();
+        if (!client) return;
+        const { data: sessions } = await client.from('sessions').select('id, title').order('week_number', { ascending: true });
+        const sel = document.getElementById(selectId);
+        if (sel && sessions) {
+            sel.innerHTML = sessions.map(s => `<option value="${s.id}">${s.title || 'Session'}</option>`).join('');
+        }
+    }
+
+    async function createStandaloneAssignment(event) {
+        event.preventDefault();
+        const sessionId = document.getElementById('standaloneSession')?.value;
+        const title = document.getElementById('saTitle')?.value?.trim();
+        const desc = document.getElementById('saDesc')?.value?.trim();
+        const type = document.getElementById('saType')?.value;
+
+        if (!sessionId) { showSystemCard('Please select a session.', 'error'); return; }
+        if (!title) { showSystemCard('Please enter a title.', 'error'); return; }
+
+        try {
+            const client = await getSupabase();
+            if (!client) throw new Error('Not connected');
+            const { error } = await client.from('tasks').insert({
+                session_id: sessionId, title, description: desc || null, created_at: new Date().toISOString()
+            });
+            if (error) throw error;
+            showSystemCard('Assignment created!', 'success');
+            closeModal();
+            loadSessionsForProgram();
+        } catch(e) {
+            showSystemCard('Error: ' + (e.message || 'Unknown error'), 'error');
+        }
+    }
+    </script>
+</body>
+</html>

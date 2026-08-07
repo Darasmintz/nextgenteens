@@ -1,0 +1,103 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Register - NextGenTeens</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com" />
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800;900&display=swap" rel="stylesheet" />
+    <link rel="stylesheet" href="style.css" />
+    <link rel="icon" href="logo.png" />
+    <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2/dist/umd/supabase.min.js"></script>
+</head>
+<body class="auth-page">
+    <!-- Page Loader -->
+    <div class="page-loader" id="pageLoader">
+        <div class="loader-spinner"></div>
+        <div class="loader-text">Loading...</div>
+    </div>
+
+    <div class="auth-container">
+        <div class="auth-card register-card">
+            <div class="auth-header">
+                <a href="index.html" class="auth-brand">
+                    <img src="logo.png" alt="NextGenTeens" class="auth-logo" />
+                    <span>NextGenTeens</span>
+                </a>
+                <h1>Create Your Account</h1>
+                <p class="auth-subtitle">Choose your role and start your journey</p>
+            </div>
+
+            <div class="auth-role-select">
+                <div class="role-card selected" data-role="student" onclick="selectRole('student')">
+                    <span class="role-icon">&#129489;&#8205;&#127891;</span>
+                    <h4>Student</h4>
+                    <p>Join programs, learn, and grow</p>
+                </div>
+                <div class="role-card locked" data-role="mentor" onclick="requestAccessCode('mentor')">
+                    <span class="role-icon">&#128104;&#8205;&#127979;</span>
+                    <h4>Mentor</h4>
+                    <p>Guide and develop teenagers</p>
+                    <span class="role-lock">&#128274;</span>
+                </div>
+                <div class="role-card locked" data-role="admin" onclick="requestAccessCode('admin')">
+                    <span class="role-icon">&#9881;&#65039;</span>
+                    <h4>Admin</h4>
+                    <p>Platform management</p>
+                    <span class="role-lock">&#128274;</span>
+                </div>
+            </div>
+
+            <div id="accessCodeSection" class="access-code-section hidden">
+                <div class="form-group">
+                    <label for="accessCode">Enter Access Code</label>
+                    <input type="text" id="accessCode" placeholder="Enter your access code" />
+                    <p class="access-code-hint">Contact administrator for access code</p>
+                </div>
+                <button type="button" class="btn btn-primary btn-full" onclick="verifyAccessCode()">Verify Code</button>
+            </div>
+
+            <form id="registerForm" class="auth-form" onsubmit="handleRegister(event)">
+                <input type="hidden" id="regRole" value="student" />
+
+                <div class="form-group">
+                    <label for="regFullName">Full Name</label>
+                    <input type="text" id="regFullName" placeholder="John Doe" required />
+                </div>
+                <div class="form-group">
+                    <label for="regEmail">Email Address</label>
+                    <input type="email" id="regEmail" placeholder="you@example.com" required />
+                </div>
+                <div class="form-group">
+                    <label for="regAge">Age</label>
+                    <input type="number" id="regAge" placeholder="12" min="12" max="25" required />
+                </div>
+                <div class="form-group">
+                    <label for="regPassword">Password</label>
+                    <input type="password" id="regPassword" placeholder="Min 8 characters" minlength="8" required />
+                </div>
+                <div class="form-group">
+                    <label for="regConfirmPassword">Confirm Password</label>
+                    <input type="password" id="regConfirmPassword" placeholder="Confirm your password" required />
+                </div>
+                <div class="form-options">
+                    <label class="checkbox-label">
+                        <input type="checkbox" required /> I agree to the Terms & Conditions
+                    </label>
+                </div>
+                <button type="submit" class="btn btn-primary btn-full">Create Account</button>
+            </form>
+
+            <div class="auth-footer">
+                <p>Already have an account? <a href="login.html">Sign in</a></p>
+                <p class="auth-org">&#169; JTF Youth Development</p>
+            </div>
+
+            <div id="regError" class="auth-error hidden"></div>
+            <div id="regSuccess" class="auth-success hidden"></div>
+        </div>
+    </div>
+    <script src="script.js"></script>
+</body>
+</html>
