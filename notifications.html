@@ -262,7 +262,7 @@
         }
 
         el.innerHTML = filtered.map((n, i) => `
-            <div class="notif-item ${n.unread ? 'unread' : ''}" onclick="markAsRead(${i})">
+            <div class="notif-item ${n.unread ? 'unread' : ''}" onclick="markAsRead(this, '${n.title.replace(/'/g, "\\'")}', '${n.time || ''}')">
                 <div class="notif-icon">${n.icon}</div>
                 <div class="notif-body">
                     <div class="notif-title">${n.title}</div>
@@ -273,13 +273,19 @@
             </div>`).join('');
     }
 
-    function markAsRead(index) {
-        const notif = allNotifications[index];
+    function markAsRead(element, title, time) {
+        const notif = allNotifications.find(n => n.title === title && (n.time || '') === time);
         if (notif && notif.unread) {
             notif.unread = false;
             const unreadCount = allNotifications.filter(n => n.unread).length;
             document.getElementById('unreadCount').textContent = unreadCount;
-            renderNotifications(allNotifications);
+            
+            // Update the specific element's visual state
+            if (element) {
+                element.classList.remove('unread');
+                const dot = element.querySelector('.notif-dot');
+                if (dot) dot.remove();
+            }
             
             // Update notification bell badge
             const badge = document.getElementById('notifBadge');
