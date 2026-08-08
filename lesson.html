@@ -16,7 +16,7 @@
         .lesson-sidebar { display: flex; flex-direction: column; gap: 1rem; }
         .video-wrap { position: relative; width: 100%; padding-bottom: 56.25%; border-radius: var(--radius-lg); overflow: hidden; background: #000; margin-bottom: 1.25rem; }
         .video-wrap iframe { position: absolute; top: 0; left: 0; width: 100%; height: 100%; border: none; }
-        .video-placeholder { position: absolute; top: 0; left: 0; width: 100%; height: 100%; display: flex; flex-direction: column; align-items: center; justify-content: center; background: var(--secondary); color: white; gap: 0.75rem; cursor: pointer; transition: background var(--transition); }
+        .video-placeholder { position: absolute; top: 0; left: 0; width: 100%; height: 100%; display: flex; flex-direction: column; align-items: center; justify-content: center; background: var(--secondary); color: white; gap: 0.75rem; cursor: pointer; transition: background var(--transition); border-radius: var(--radius-lg); }
         .video-placeholder:hover { background: #1a2744; }
         .video-placeholder-icon { font-size: 4rem; }
         .lesson-tabs { display: flex; gap: 0; border-bottom: 2px solid var(--border); margin-bottom: 1.25rem; }
@@ -61,6 +61,8 @@
             .notes-content { font-size: 0.875rem; }
             .notes-content h3 { font-size: 1rem; }
             .notes-content ul { padding-left: 1rem; }
+            .video-wrap { border-radius: var(--radius-md); }
+            .video-placeholder { border-radius: var(--radius-md); }
         }
         @media (max-width: 480px) {
             .lesson-tab { min-width: 100px; font-size: 0.6875rem; padding: 0.375rem 0.5rem; }
@@ -72,6 +74,8 @@
             .notes-content { font-size: 0.8125rem; }
             .notes-content h3 { font-size: 0.875rem; }
             .notes-content blockquote { padding-left: 0.75rem; }
+            .video-wrap { border-radius: var(--radius-sm); }
+            .video-placeholder { border-radius: var(--radius-sm); }
         }
     </style>
 </head>
