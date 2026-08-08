@@ -149,7 +149,7 @@
         // 1. Pending assignments
         try {
             const { data: subs } = await client.from('task_submissions')
-                .select('id, status, reviewed_at, feedback, tasks(title, sessions(title))')
+                .select('id, status, reviewed_at, feedback, tasks(title)')
                 .eq('student_id', userId)
                 .order('reviewed_at', { ascending: false })
                 .limit(20);
