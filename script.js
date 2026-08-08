@@ -1091,6 +1091,17 @@ async function loadStudentDashboard(profile) {
             .single();
         profile = p;
         currentProfile = profile;
+    } else {
+        // Force refresh profile to get latest data (especially after unsuspension)
+        const { data: freshProfile } = await client
+            .from('profiles')
+            .select('*')
+            .eq('id', profile.id)
+            .single();
+        if (freshProfile) {
+            profile = freshProfile;
+            currentProfile = profile;
+        }
     }
 
     const nameEl = document.getElementById('studentName');
@@ -2977,7 +2988,18 @@ async function unsuspendUser(userId) {
         if (!client) throw new Error('Not connected');
         var { error } = await client.from('profiles').update({ suspended: false, status: 'active' }).eq('id', userId);
         if (error) throw error;
-        showSystemCard('User unsuspended.', 'success'); loadAdminUsers();
+        showSystemCard('User unsuspended.', 'success'); 
+        loadAdminUsers();
+        
+        // If unsuspending current user, force session refresh
+        var sessionData = await client.auth.getSession();
+        if (sessionData.data.session && sessionData.data.session.user.id === userId) {
+            // Clear cached profile
+            currentProfile = null;
+            // Force session refresh
+            await client.auth.refreshSession();
+            showSystemCard('Your account has been unsuspended. Please refresh the page.', 'info');
+        }
     } catch (e) { alert('Error: ' + (e.message || 'Unknown error')); }
 }
 
