@@ -133,6 +133,9 @@
         }
 
         allNotifications = await buildNotifications(session.user.id, client);
+        
+        // Restore read state from localStorage
+        loadReadNotifications();
 
         document.getElementById('totalCount').textContent = allNotifications.length;
         document.getElementById('unreadCount').textContent = allNotifications.filter(n => n.unread).length;
@@ -231,6 +234,19 @@
         return diff < hoursThreshold;
     }
 
+    function timeAgo(dateStr) {
+        if (!dateStr) return 'Unknown';
+        const now = new Date();
+        const date = new Date(dateStr);
+        const seconds = Math.floor((now - date) / 1000);
+        
+        if (seconds < 60) return 'Just now';
+        if (seconds < 3600) return Math.floor(seconds / 60) + ' min ago';
+        if (seconds < 86400) return Math.floor(seconds / 3600) + ' hours ago';
+        if (seconds < 604800) return Math.floor(seconds / 86400) + ' days ago';
+        return date.toLocaleDateString();
+    }
+
     function renderNotifications(notifs) {
         const el = document.getElementById('notifList');
         const filtered = currentFilter === 'all' ? notifs : notifs.filter(n => n.type === currentFilter);
@@ -246,7 +262,7 @@
         }
 
         el.innerHTML = filtered.map((n, i) => `
-            <div class="notif-item ${n.unread ? 'unread' : ''}" onclick="${n.link ? `window.location.href='${n.link}'` : 'void(0)'}">
+            <div class="notif-item ${n.unread ? 'unread' : ''}" onclick="markAsRead(${i})">
                 <div class="notif-icon">${n.icon}</div>
                 <div class="notif-body">
                     <div class="notif-title">${n.title}</div>
@@ -255,6 +271,52 @@
                 </div>
                 ${n.unread ? '<div class="notif-dot"></div>' : ''}
             </div>`).join('');
+    }
+
+    function markAsRead(index) {
+        const notif = allNotifications[index];
+        if (notif && notif.unread) {
+            notif.unread = false;
+            const unreadCount = allNotifications.filter(n => n.unread).length;
+            document.getElementById('unreadCount').textContent = unreadCount;
+            renderNotifications(allNotifications);
+            
+            // Update notification bell badge
+            const badge = document.getElementById('notifBadge');
+            if (badge && unreadCount === 0) {
+                badge.style.display = 'none';
+            } else if (badge) {
+                badge.textContent = unreadCount;
+            }
+            
+            // Persist read state to localStorage
+            saveReadNotifications();
+        }
+        
+        // Navigate to link if exists
+        if (notif && notif.link) {
+            window.location.href = notif.link;
+        }
+    }
+
+    function saveReadNotifications() {
+        const readIds = allNotifications
+            .filter(n => !n.unread)
+            .map(n => n.title + '|' + (n.time || 'pending'));
+        localStorage.setItem('ngt_read_notifs', JSON.stringify(readIds));
+    }
+
+    function loadReadNotifications() {
+        const saved = localStorage.getItem('ngt_read_notifs');
+        if (saved) {
+            const readIds = JSON.parse(saved);
+            allNotifications.forEach(n => {
+                const id = n.title + '|' + (n.time || 'pending');
+                if (readIds.includes(id)) {
+                    n.unread = false;
+                }
+            });
+        }
     }
 
     function filterNotifs(type, btn) {
@@ -272,6 +334,10 @@
         const badge = document.getElementById('notifBadge');
         if (badge) badge.style.display = 'none';
         localStorage.setItem('ngt_notifs_cleared', new Date().toISOString());
+        
+        // Save read state to localStorage
+        saveReadNotifications();
+        
         try {
             const client = await getSupabase();
             if (client) {
