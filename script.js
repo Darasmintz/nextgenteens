@@ -2166,14 +2166,20 @@ async function loadAdminUsers() {
         }
         container.innerHTML = users.map(function(u) {
             var roleColor = u.role === 'admin' ? 'danger' : u.role === 'mentor' ? 'warning' : 'info';
+            var isSuspended = u.suspended || u.status === 'suspended' || u.status === 'deactivated';
+            var statusBadge = isSuspended ? '<span class="badge danger">Suspended</span>' : '<span class="badge success">Active</span>';
+            var suspendButton = isSuspended 
+                ? '<button class="btn btn-sm btn-success" onclick="unsuspendUser(\'' + u.id + '\')">Unsuspend</button>'
+                : '<button class="btn btn-sm btn-danger" onclick="suspendUser(\'' + u.id + '\')">Suspend</button>';
+            
             return '<tr>' +
                 '<td><span class="student-name">' + (u.full_name || 'Unknown') + '</span></td>' +
                 '<td>' + (u.email || '') + '</td>' +
                 '<td><span class="badge ' + roleColor + '">' + (u.role || 'student') + '</span></td>' +
-                '<td><span class="badge success">Active</span></td>' +
+                '<td>' + statusBadge + '</td>' +
                 '<td>' +
                 '<button class="btn btn-sm btn-outline" onclick="editUser(\'' + u.id + '\')">Edit</button> ' +
-                '<button class="btn btn-sm btn-danger" onclick="suspendUser(\'' + u.id + '\')">Suspend</button>' +
+                suspendButton +
                 '</td></tr>';
         }).join('');
     } catch (e) {
@@ -2688,14 +2694,20 @@ async function showAdminUsersModal() {
         '<div style="margin-bottom:1rem;">' +
         '<button class="btn btn-sm btn-outline" onclick="exportStudentReport()">Export CSV</button></div>' +
         '<div class="table-container"><table class="data-table"><thead>' +
-        '<tr><th>Name</th><th>Email</th><th>Role</th><th>Actions</th></tr></thead><tbody>' +
+        '<tr><th>Name</th><th>Email</th><th>Role</th><th>Status</th><th>Actions</th></tr></thead><tbody>' +
         (users && users.length ? users.map(function(u) {
             var rc = u.role === 'admin' ? 'danger' : u.role === 'mentor' ? 'warning' : 'info';
+            var isSuspended = u.suspended || u.status === 'suspended' || u.status === 'deactivated';
+            var statusBadge = isSuspended ? '<span class="badge danger">Suspended</span>' : '<span class="badge success">Active</span>';
+            var suspendButton = isSuspended 
+                ? '<button class="btn btn-sm btn-success" onclick="unsuspendUser(\'' + u.id + '\')">Unsuspend</button>'
+                : '<button class="btn btn-sm btn-danger" onclick="suspendUser(\'' + u.id + '\')">Suspend</button>';
             return '<tr><td>' + (u.full_name || '') + '</td><td>' + (u.email || '') + '</td>' +
-                '<td><span class="badge ' + rc + '">' + (u.role || '') + '</span></td><td>' +
+                '<td><span class="badge ' + rc + '">' + (u.role || '') + '</span></td>' +
+                '<td>' + statusBadge + '</td><td>' +
                 '<button class="btn btn-sm btn-outline" onclick="editUser(\'' + u.id + '\')">Edit</button> ' +
-                '<button class="btn btn-sm btn-danger" onclick="suspendUser(\'' + u.id + '\')">Suspend</button></td></tr>';
-        }).join('') : '<tr><td colspan="4" style="text-align:center;padding:2rem;color:var(--text-muted);">No users.</td></tr>') +
+                suspendButton + '</td></tr>';
+        }).join('') : '<tr><td colspan="5" style="text-align:center;padding:2rem;color:var(--text-muted);">No users.</td></tr>') +
         '</tbody></table></div>'
     );
 }
@@ -2897,6 +2909,17 @@ async function suspendUser(userId) {
         var { error } = await client.from('profiles').update({ suspended: true }).eq('id', userId);
         if (error) throw error;
         showSystemCard('User suspended.', 'success'); loadAdminUsers();
+    } catch (e) { alert('Error: ' + (e.message || 'Unknown error')); }
+}
+
+async function unsuspendUser(userId) {
+    if (!confirm('Unsuspend this user?')) return;
+    try {
+        var client = await getSupabase();
+        if (!client) throw new Error('Not connected');
+        var { error } = await client.from('profiles').update({ suspended: false, status: 'active' }).eq('id', userId);
+        if (error) throw error;
+        showSystemCard('User unsuspended.', 'success'); loadAdminUsers();
     } catch (e) { alert('Error: ' + (e.message || 'Unknown error')); }
 }
 
@@ -3370,14 +3393,24 @@ async function loadLeaderboardPage() {
     var sessionData = await client.auth.getSession();
     if (!sessionData.data.session) return;
     if (!currentProfile) {
-        var _pRes = await client.from('profiles').select('full_name').eq('id', sessionData.data.session.user.id).single();
+        var _pRes = await client.from('profiles').select('full_name, role').eq('id', sessionData.data.session.user.id).single();
         if (_pRes.data) currentProfile = _pRes.data;
     }
     var _nameEl = document.getElementById('userNameDisplay');
-    if (_nameEl && currentProfile) _nameEl.textContent = currentProfile.full_name || 'Student';
+    var _adminNameEl = document.getElementById('adminNameDisplay');
+    var _mentorNameEl = document.getElementById('mentorNameDisplay');
+    
+    if (_nameEl && currentProfile) _nameEl.textContent = currentProfile.full_name || 'User';
+    if (_adminNameEl && currentProfile) _adminNameEl.textContent = currentProfile.full_name || 'Admin';
+    if (_mentorNameEl && currentProfile) _mentorNameEl.textContent = currentProfile.full_name || 'Mentor';
     
     // Load profile picture in topbar
     if (currentProfile) await loadUserAvatar(currentProfile.id, currentProfile.role);
+    
+    // Swap sidebar for admin/mentor users
+    if (currentProfile && currentProfile.role !== 'student') {
+        swapToRoleSidebar(currentProfile.role);
+    }
     
     try {
         var { data: scores } = await client.from('sgi_scores')
@@ -4199,6 +4232,7 @@ async function checkAuth() {
         if (path.includes('session-manager') && profile.role === 'student') {
             window.location.href = 'student-dashboard.html'; return;
         }
+        // No role guard for leaderboard - all roles can access
 
         // Set name everywhere
         document.querySelectorAll('#userNameDisplay, #mentorNameDisplay, #adminNameDisplay').forEach(function(el) {
@@ -4208,8 +4242,8 @@ async function checkAuth() {
         // Load and display profile pictures
         loadProfilePicture(profile.id, profile.role);
 
-        // For shared pages (activity-feed, notifications) — swap sidebar to match role
-        var sharedPages = ['activity-feed', 'notifications'];
+        // For shared pages (activity-feed, notifications, leaderboard) — swap sidebar to match role
+        var sharedPages = ['activity-feed', 'notifications', 'leaderboard'];
         var onSharedPage = sharedPages.some(function(p) { return path.includes(p); });
         if (onSharedPage && profile.role !== 'student') {
             swapToRoleSidebar(profile.role);
