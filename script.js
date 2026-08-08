@@ -1201,6 +1201,7 @@ async function loadPendingAssignments(studentId) {
                 id,
                 status,
                 created_at,
+                feedback,
                 tasks (
                     id,
                     title,
@@ -1223,11 +1224,11 @@ async function loadPendingAssignments(studentId) {
             const { data: allAssignments } = await client
                 .from('tasks')
                 .select('id, title, sessions (title, programs(name))')
-                .limit(3);
+                .limit(10);
 
             if (allAssignments && allAssignments.length > 0) {
                 container.innerHTML = allAssignments.map(function(assign) {
-                    return '<div class="assignment-item"><div><h4>' + (assign.title || 'Untitled Assignment') + '</h4><p>' + (assign.sessions?.programs?.name || 'Unknown Program') + ' - ' + (assign.sessions?.title || 'Session') + '</p></div><button class="btn btn-sm btn-primary" onclick="startAssignment(\'' + assign.id + '\')">Start</button></div>';
+                    return '<div class="assignment-item"><div><h4>' + (assign.title || 'Untitled Assignment') + '</h4><p>' + (assign.sessions?.programs?.name || 'Unknown Program') + ' - ' + (assign.sessions?.title || 'Session') + '</p></div><button class="btn btn-sm btn-primary" onclick="startAssignment(\'' + assign.id + '\')">Submit</button></div>';
                 }).join('');
             } else {
                 container.innerHTML = '<div class="empty-state"><p style="color: var(--text-muted); text-align: center; padding: 1rem;">No pending assignments! You\'re all caught up.</p></div>';
@@ -1242,6 +1243,7 @@ async function loadPendingAssignments(studentId) {
             
             var statusBadge = '';
             var actionButton = '';
+            var feedbackHtml = sub.feedback ? '<div style="margin-top:0.5rem;padding:0.5rem;background:var(--background);border-radius:var(--radius-sm);font-size:0.8rem;color:var(--text-light);"><strong>Mentor Feedback:</strong> ' + sub.feedback + '</div>' : '';
             
             if (sub.status === 'pending') {
                 statusBadge = '<span class="badge warning">Under Review</span>';
@@ -1257,7 +1259,7 @@ async function loadPendingAssignments(studentId) {
                 actionButton = '<button class="btn btn-sm btn-outline" disabled>Submitted</button>';
             }
             
-            return '<div class="assignment-item"><div><h4>' + (assignment?.title || 'Untitled Assignment') + '</h4><p>' + (program?.name || 'Unknown Program') + ' - ' + (session?.title || 'Session') + '</p></div>' + statusBadge + actionButton + '</div>';
+            return '<div class="assignment-item"><div><h4>' + (assignment?.title || 'Untitled Assignment') + '</h4><p>' + (program?.name || 'Unknown Program') + ' - ' + (session?.title || 'Session') + '</p>' + statusBadge + feedbackHtml + '</div>' + actionButton + '</div>';
         }).join('');
     } catch (error) {
         console.error('Error loading pending assignments:', error);
@@ -2357,7 +2359,16 @@ async function submitAssignment(event, assignmentId) {
         if (error) throw error;
         showSystemCard('Assignment submitted successfully!', 'success');
         closeModal();
+        
+        // Small delay to ensure data is committed before reload
+        await new Promise(resolve => setTimeout(resolve, 500));
+        
         loadPendingAssignments(sessionData.data.session.user.id);
+        
+        // Reload tasks page if on tasks page
+        if (window.location.pathname.includes('tasks.html')) {
+            await loadTasksPage();
+        }
         
         // Check for achievement unlocks after submission
         await checkAndUnlockAchievements(sessionData.data.session.user.id);
@@ -3131,13 +3142,13 @@ async function loadTasksPage() {
     
     try {
         var { data: allAssignments } = await client.from('tasks').select('id, title, sessions(title, programs(name))');
-        var { data: submissions } = await client.from('task_submissions').select('task_id, status').eq('student_id', studentId);
+        var { data: submissions } = await client.from('task_submissions').select('task_id, status, feedback, reviewed_at').eq('student_id', studentId);
         var subMap = {};
-        if (submissions) submissions.forEach(function(s) { subMap[s.task_id] = s.status; });
+        if (submissions) submissions.forEach(function(s) { subMap[s.task_id] = s; });
         var pending = (allAssignments || []).filter(function(a) { return !subMap[a.id]; });
-        var completed = (allAssignments || []).filter(function(a) { return subMap[a.id] && subMap[a.id] !== 'rejected'; });
-        var approved = (allAssignments || []).filter(function(a) { return subMap[a.id] === 'approved'; });
-        var rejected = (allAssignments || []).filter(function(a) { return subMap[a.id] === 'rejected'; });
+        var completed = (allAssignments || []).filter(function(a) { return subMap[a.id] && subMap[a.id].status !== 'rejected'; });
+        var approved = (allAssignments || []).filter(function(a) { return subMap[a.id] && subMap[a.id].status === 'approved'; });
+        var rejected = (allAssignments || []).filter(function(a) { return subMap[a.id] && subMap[a.id].status === 'rejected'; });
         setEl('pendingCount', pending.length);
         setEl('completedCount', completed.length);
         setEl('totalTasks', (allAssignments || []).length);
@@ -3150,12 +3161,16 @@ async function loadTasksPage() {
             if (!el) return;
             if (!items.length) { el.innerHTML = '<div style="text-align:center;padding:1rem;color:var(--text-muted);">' + emptyMsg + '</div>'; return; }
             el.innerHTML = items.map(function(a) {
-                var status = subMap[a.id] || 'not_submitted';
+                var sub = subMap[a.id];
+                var status = sub ? sub.status : 'not_submitted';
                 var bc = status === 'approved' ? 'success' : status === 'pending' ? 'warning' : status === 'rejected' ? 'danger' : 'info';
                 var bl = status === 'approved' ? 'Approved' : status === 'pending' ? 'Under Review' : status === 'rejected' ? 'Rejected' : 'Not Submitted';
+                var feedbackHtml = sub && sub.feedback ? '<div style="margin-top:0.5rem;padding:0.5rem;background:var(--background);border-radius:var(--radius-sm);font-size:0.8rem;color:var(--text-light);"><strong>Mentor Feedback:</strong> ' + sub.feedback + '</div>' : '';
                 return '<div class="assignment-item"><div><h4>' + (a.title || 'Untitled') + '</h4>' +
                     '<p>' + (a.sessions && a.sessions.programs ? a.sessions.programs.name : 'Program') + '</p>' +
-                    '<span class="badge ' + bc + '" style="margin-top:0.25rem;">' + bl + '</span></div>' +
+                    '<span class="badge ' + bc + '" style="margin-top:0.25rem;">' + bl + '</span>' +
+                    feedbackHtml +
+                    '</div>' +
                     (status === 'not_submitted' || status === 'rejected' ? '<button class="btn btn-sm btn-primary" onclick="startAssignment(\'' + a.id + '\')">Submit</button>' : '') +
                     '</div>';
             }).join('');
@@ -4505,6 +4520,15 @@ async function uploadProfilePicture(file) {
         if (profile) {
             loadProfilePicture(userId, profile.role);
             loadLargeProfilePicture(userId);
+        }
+        
+        // Reload dashboard data if on student dashboard
+        if (window.location.pathname.includes('student-dashboard.html')) {
+            var { data: fullProfile } = await client.from('profiles').select('*').eq('id', userId).single();
+            if (fullProfile) {
+                currentProfile = fullProfile;
+                await loadStudentDashboard(fullProfile);
+            }
         }
         
         return true;
