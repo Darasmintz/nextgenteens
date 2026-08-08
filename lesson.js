@@ -1530,12 +1530,15 @@ function loadVideo() {
     }
     const ytId = extractYouTubeId(rawUrl);
     const embedUrl = ytId && /^[\w-]{11}$/.test(ytId)
-        ? `https://www.youtube.com/embed/${ytId}?rel=0&autoplay=1&modestbranding=1`
+        ? `https://www.youtube.com/embed/${ytId}?rel=0&autoplay=1&modestbranding=1&playsinline=1&iv_load_policy=3&cc_load_policy=1`
         : rawUrl;
 
     document.getElementById('videoWrap').innerHTML = `
         <iframe src="${embedUrl}"
-            title="Lesson Video" allowfullscreen allow="autoplay; accelerometer; clipboard-write; encrypted-media; gyroscope; picture-in-picture">
+            title="Lesson Video" 
+            allowfullscreen 
+            allow="autoplay; accelerometer; clipboard-write; encrypted-media; gyroscope; picture-in-picture; web-share"
+            style="position: absolute; top: 0; left: 0; width: 100%; height: 100%; border: none;">
         </iframe>`;
 }
 
