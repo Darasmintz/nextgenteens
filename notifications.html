@@ -149,16 +149,18 @@
         // 1. Pending assignments
         try {
             const { data: subs } = await client.from('task_submissions')
-                .select('id, status, reviewed_at, tasks(title, sessions(title))')
+                .select('id, status, reviewed_at, feedback, tasks(title, sessions(title))')
                 .eq('student_id', userId)
                 .order('reviewed_at', { ascending: false })
                 .limit(20);
 
             (subs || []).forEach(s => {
                 if (s.status === 'approved') {
-                    notifs.push({ type:'assignment', icon:'&#9989;', title:'Assignment Approved', desc: `"${s.tasks?.title || 'Assignment'}" has been approved by your mentor.`, time: s.reviewed_at, unread: isRecent(s.reviewed_at, 48) });
+                    const feedbackText = s.feedback ? ' Feedback: ' + s.feedback : '';
+                    notifs.push({ type:'assignment', icon:'&#9989;', title:'Assignment Approved', desc: `"${s.tasks?.title || 'Assignment'}" has been approved by your mentor.${feedbackText}`, time: s.reviewed_at, unread: isRecent(s.reviewed_at, 48) });
                 } else if (s.status === 'rejected') {
-                    notifs.push({ type:'assignment', icon:'&#10060;', title:'Assignment Needs Revision', desc: `"${s.tasks?.title || 'Assignment'}" was returned for revision. Please resubmit.`, time: s.reviewed_at, unread: isRecent(s.reviewed_at, 48), link:'tasks.html' });
+                    const feedbackText = s.feedback ? ' Feedback: ' + s.feedback : '';
+                    notifs.push({ type:'assignment', icon:'&#10060;', title:'Assignment Needs Revision', desc: `"${s.tasks?.title || 'Assignment'}" was returned for revision.${feedbackText} Please resubmit.`, time: s.reviewed_at, unread: isRecent(s.reviewed_at, 48), link:'tasks.html' });
                 } else if (s.status === 'pending') {
                     notifs.push({ type:'assignment', icon:'&#9203;', title:'Assignment Under Review', desc: `"${s.tasks?.title || 'Assignment'}" is being reviewed by your mentor.`, time: s.reviewed_at, unread: false });
                 }
