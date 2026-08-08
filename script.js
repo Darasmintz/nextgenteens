@@ -1237,7 +1237,8 @@ async function loadPendingAssignments(studentId) {
             var assignment = sub.tasks;
             var session = assignment?.sessions;
             var program = session?.programs;
-            return '<div class="assignment-item"><div><h4>' + (assignment?.title || 'Untitled Assignment') + '</h4><p>' + (program?.name || 'Unknown Program') + ' - ' + (session?.title || 'Session') + '</p></div><button class="btn btn-sm btn-primary" onclick="startAssignment(\'' + (assignment?.id) + '\')">Submit</button></div>';
+            var statusBadge = sub.status === 'pending' ? '<span class="badge warning">Under Review</span>' : '<span class="badge success">Submitted</span>';
+            return '<div class="assignment-item"><div><h4>' + (assignment?.title || 'Untitled Assignment') + '</h4><p>' + (program?.name || 'Unknown Program') + ' - ' + (session?.title || 'Session') + '</p></div>' + statusBadge + '</div>';
         }).join('');
     } catch (error) {
         console.error('Error loading pending assignments:', error);
