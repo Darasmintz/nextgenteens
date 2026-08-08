@@ -1215,13 +1215,7 @@ async function loadPendingAssignments(studentId) {
                 feedback,
                 tasks (
                     id,
-                    title,
-                    session_id,
-                    sessions (
-                        title,
-                        program_id,
-                        programs (name)
-                    )
+                    title
                 )
             `)
             .eq('student_id', studentId)
@@ -1234,12 +1228,12 @@ async function loadPendingAssignments(studentId) {
         if (!submissions || submissions.length === 0) {
             const { data: allAssignments } = await client
                 .from('tasks')
-                .select('id, title, sessions (title, programs(name))')
+                .select('id, title')
                 .limit(10);
 
             if (allAssignments && allAssignments.length > 0) {
                 container.innerHTML = allAssignments.map(function(assign) {
-                    return '<div class="assignment-item"><div><h4>' + (assign.title || 'Untitled Assignment') + '</h4><p>' + (assign.sessions?.programs?.name || 'Unknown Program') + ' - ' + (assign.sessions?.title || 'Session') + '</p></div><button class="btn btn-sm btn-primary" onclick="startAssignment(\'' + assign.id + '\')">Submit</button></div>';
+                    return '<div class="assignment-item"><div><h4>' + (assign.title || 'Untitled Assignment') + '</h4></div><button class="btn btn-sm btn-primary" onclick="startAssignment(\'' + assign.id + '\')">Submit</button></div>';
                 }).join('');
             } else {
                 container.innerHTML = '<div class="empty-state"><p style="color: var(--text-muted); text-align: center; padding: 1rem;">No pending assignments! You\'re all caught up.</p></div>';
@@ -1249,8 +1243,6 @@ async function loadPendingAssignments(studentId) {
 
         container.innerHTML = submissions.map(function(sub) {
             var assignment = sub.tasks;
-            var session = assignment?.sessions;
-            var program = session?.programs;
             
             var statusBadge = '';
             var actionButton = '';
@@ -1270,7 +1262,7 @@ async function loadPendingAssignments(studentId) {
                 actionButton = '<button class="btn btn-sm btn-outline" disabled>Submitted</button>';
             }
             
-            return '<div class="assignment-item"><div><h4>' + (assignment?.title || 'Untitled Assignment') + '</h4><p>' + (program?.name || 'Unknown Program') + ' - ' + (session?.title || 'Session') + '</p>' + statusBadge + feedbackHtml + '</div>' + actionButton + '</div>';
+            return '<div class="assignment-item"><div><h4>' + (assignment?.title || 'Untitled Assignment') + '</h4>' + statusBadge + feedbackHtml + '</div>' + actionButton + '</div>';
         }).join('');
     } catch (error) {
         console.error('Error loading pending assignments:', error);
@@ -3163,7 +3155,7 @@ async function loadTasksPage() {
     if (currentProfile) await loadUserAvatar(currentProfile.id, currentProfile.role);
     
     try {
-        var { data: allAssignments } = await client.from('tasks').select('id, title, sessions(title, programs(name))');
+        var { data: allAssignments } = await client.from('tasks').select('id, title');
         var { data: submissions } = await client.from('task_submissions').select('task_id, status, feedback, reviewed_at').eq('student_id', studentId);
         var subMap = {};
         if (submissions) submissions.forEach(function(s) { subMap[s.task_id] = s; });
@@ -3189,7 +3181,6 @@ async function loadTasksPage() {
                 var bl = status === 'approved' ? 'Approved' : status === 'pending' ? 'Under Review' : status === 'rejected' ? 'Rejected' : 'Not Submitted';
                 var feedbackHtml = sub && sub.feedback ? '<div style="margin-top:0.5rem;padding:0.5rem;background:var(--background);border-radius:var(--radius-sm);font-size:0.8rem;color:var(--text-light);"><strong>Mentor Feedback:</strong> ' + sub.feedback + '</div>' : '';
                 return '<div class="assignment-item"><div><h4>' + (a.title || 'Untitled') + '</h4>' +
-                    '<p>' + (a.sessions && a.sessions.programs ? a.sessions.programs.name : 'Program') + '</p>' +
                     '<span class="badge ' + bc + '" style="margin-top:0.25rem;">' + bl + '</span>' +
                     feedbackHtml +
                     '</div>' +
