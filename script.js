@@ -1200,6 +1200,7 @@ async function loadPendingAssignments(studentId) {
             .select(`
                 id,
                 status,
+                created_at,
                 tasks (
                     id,
                     title,
@@ -1212,7 +1213,8 @@ async function loadPendingAssignments(studentId) {
                 )
             `)
             .eq('student_id', studentId)
-            .eq('status', 'pending');
+            .order('created_at', { ascending: false })
+            .limit(10);
 
         const container = document.getElementById('pendingAssignments');
         if (!container) return;
@@ -1237,8 +1239,25 @@ async function loadPendingAssignments(studentId) {
             var assignment = sub.tasks;
             var session = assignment?.sessions;
             var program = session?.programs;
-            var statusBadge = sub.status === 'pending' ? '<span class="badge warning">Under Review</span>' : '<span class="badge success">Submitted</span>';
-            return '<div class="assignment-item"><div><h4>' + (assignment?.title || 'Untitled Assignment') + '</h4><p>' + (program?.name || 'Unknown Program') + ' - ' + (session?.title || 'Session') + '</p></div>' + statusBadge + '</div>';
+            
+            var statusBadge = '';
+            var actionButton = '';
+            
+            if (sub.status === 'pending') {
+                statusBadge = '<span class="badge warning">Under Review</span>';
+                actionButton = '<button class="btn btn-sm btn-outline" disabled>Submitted</button>';
+            } else if (sub.status === 'approved') {
+                statusBadge = '<span class="badge success">Approved</span>';
+                actionButton = '<button class="btn btn-sm btn-outline" disabled>Completed</button>';
+            } else if (sub.status === 'rejected') {
+                statusBadge = '<span class="badge danger">Needs Revision</span>';
+                actionButton = '<button class="btn btn-sm btn-primary" onclick="startAssignment(\'' + (assignment?.id) + '\')">Resubmit</button>';
+            } else {
+                statusBadge = '<span class="badge info">Submitted</span>';
+                actionButton = '<button class="btn btn-sm btn-outline" disabled>Submitted</button>';
+            }
+            
+            return '<div class="assignment-item"><div><h4>' + (assignment?.title || 'Untitled Assignment') + '</h4><p>' + (program?.name || 'Unknown Program') + ' - ' + (session?.title || 'Session') + '</p></div>' + statusBadge + actionButton + '</div>';
         }).join('');
     } catch (error) {
         console.error('Error loading pending assignments:', error);
@@ -2299,15 +2318,42 @@ async function submitAssignment(event, assignmentId) {
         if (!client) throw new Error('Could not connect');
         var sessionData = await client.auth.getSession();
         if (!sessionData.data.session) throw new Error('Not logged in');
+        
+        // Check if there's an existing submission for this assignment
+        var { data: existingSubmission } = await client
+            .from('task_submissions')
+            .select('id')
+            .eq('task_id', assignmentId)
+            .eq('student_id', sessionData.data.session.user.id)
+            .single();
+        
         var mediaUrl = mediaFile ? await uploadSubmissionMedia(client, sessionData.data.session.user.id, mediaFile) : null;
-        var { error } = await client.from('task_submissions').insert({
-            task_id: assignmentId,
-            student_id: sessionData.data.session.user.id,
-            content: textResponse || 'Submitted via form',
-            media_type: type,
-            media_url: mediaUrl,
-            status: 'pending'
-        });
+        var error;
+        
+        if (existingSubmission) {
+            // Update existing submission
+            var updateData = {
+                content: textResponse || 'Submitted via form',
+                media_type: type,
+                status: 'pending'
+            };
+            if (mediaUrl) updateData.media_url = mediaUrl;
+            
+            var result = await client.from('task_submissions').update(updateData).eq('id', existingSubmission.id);
+            error = result.error;
+        } else {
+            // Create new submission
+            var result = await client.from('task_submissions').insert({
+                task_id: assignmentId,
+                student_id: sessionData.data.session.user.id,
+                content: textResponse || 'Submitted via form',
+                media_type: type,
+                media_url: mediaUrl,
+                status: 'pending'
+            });
+            error = result.error;
+        }
+        
         if (error) throw error;
         showSystemCard('Assignment submitted successfully!', 'success');
         closeModal();
@@ -3385,6 +3431,58 @@ async function loadAchievementsPage() {
         
     } catch (e) { 
         showSystemCard('Error loading achievements: ' + (e.message || 'Unknown error'), 'error');
+    }
+}
+
+async function loadAICoachPage() {
+    var client = await getSupabase();
+    if (!client) return;
+    var sessionData = await client.auth.getSession();
+    if (!sessionData.data.session) return;
+    if (!currentProfile) {
+        var _pRes = await client.from('profiles').select('full_name, role').eq('id', sessionData.data.session.user.id).single();
+        if (_pRes.data) currentProfile = _pRes.data;
+    }
+    var _nameEl = document.getElementById('userNameDisplay');
+    var _adminNameEl = document.getElementById('adminNameDisplay');
+    var _mentorNameEl = document.getElementById('mentorNameDisplay');
+    
+    if (_nameEl && currentProfile) _nameEl.textContent = currentProfile.full_name || 'User';
+    if (_adminNameEl && currentProfile) _adminNameEl.textContent = currentProfile.full_name || 'Admin';
+    if (_mentorNameEl && currentProfile) _mentorNameEl.textContent = currentProfile.full_name || 'Mentor';
+    
+    // Load profile picture in topbar
+    if (currentProfile) await loadUserAvatar(currentProfile.id, currentProfile.role);
+    
+    // Swap sidebar for admin/mentor users
+    if (currentProfile && currentProfile.role !== 'student') {
+        swapToRoleSidebar(currentProfile.role);
+    }
+}
+
+async function loadGamesPage() {
+    var client = await getSupabase();
+    if (!client) return;
+    var sessionData = await client.auth.getSession();
+    if (!sessionData.data.session) return;
+    if (!currentProfile) {
+        var _pRes = await client.from('profiles').select('full_name, role').eq('id', sessionData.data.session.user.id).single();
+        if (_pRes.data) currentProfile = _pRes.data;
+    }
+    var _nameEl = document.getElementById('userNameDisplay');
+    var _adminNameEl = document.getElementById('adminNameDisplay');
+    var _mentorNameEl = document.getElementById('mentorNameDisplay');
+    
+    if (_nameEl && currentProfile) _nameEl.textContent = currentProfile.full_name || 'User';
+    if (_adminNameEl && currentProfile) _adminNameEl.textContent = currentProfile.full_name || 'Admin';
+    if (_mentorNameEl && currentProfile) _mentorNameEl.textContent = currentProfile.full_name || 'Mentor';
+    
+    // Load profile picture in topbar
+    if (currentProfile) await loadUserAvatar(currentProfile.id, currentProfile.role);
+    
+    // Swap sidebar for admin/mentor users
+    if (currentProfile && currentProfile.role !== 'student') {
+        swapToRoleSidebar(currentProfile.role);
     }
 }
 
@@ -4638,6 +4736,7 @@ document.addEventListener('DOMContentLoaded', async function() {
     if (path.includes('ctfs')) loadCTFSPage();
     if (path.includes('choir')) loadChoirPage();
     if (path.includes('ai-coach')) loadAICoachPage();
+    if (path.includes('games')) loadGamesPage();
 
     // Public pages
     if (path.includes('index') || path === '/' || path === '') {
